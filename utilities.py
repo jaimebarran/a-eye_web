@@ -1,35 +1,63 @@
-import os
+import os, glob
 from sys import path
-import argparse
+# from os import getcwd
+# path.append(getcwd() + "/a-eye_segmentation/3DUnet_TF1/model")
+# from network import Unet_3D
+# import generate_h5
 
-parser = argparse.ArgumentParser(description="Overlay Label Map On Top Of An Image.")
-parser.add_argument("input_image")
-parser.add_argument("label_map")
-parser.add_argument("output_image")
-args = parser.parse_args()
+# args
+shm_size = 10 # shared memory (gb)
+abs_path = '/mnt/sda1/Repos/a-eye/a-eye_segmentation/deep_learning/nnUNet/nnUNet'
+rel_path = '/opt/nnunet_resources'
+args_i = 'nnUNet_inference/test/input1' # input folder
+args_o = 'nnUNet_inference/test/output1' # output folder
 
 def main():
-    conf = configure()
-    model = Unet_3D(tf.Session(), conf)
-    generate_h5.build_h5_dataset(conf.raw_data_dir,conf.data_dir)
-    getattr(model, 'predict')()
-    return 'DONE!!'
 
-if __name__ == '__main__':
-    # configure which gpu or cpu to use
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-    tf.app.run()
+    check_filenames(os.path.join(abs_path, args_i))
 
+    # inference command terminal
+    command = f' \
+        sudo docker run \
+        --gpus device=0 \
+        --shm-size={shm_size}gb \
+        -v {abs_path}:{rel_path} \
+        petermcgor/nnunet:0.0.1 nnUNet_predict \
+        -i {rel_path}/{args_i} \
+        -o {rel_path}/{args_o} \
+        -tr nnUNetTrainerV2 \
+        -ctr nnUNetTrainerV2CascadeFullRes \
+        -m 3d_fullres \
+        -p nnUNetPlansv2.1 \
+        -t Task313_Eye \
+    '
+    print(command)
+    os.system(command)
 
-if not os.path.exists(output_image_path):
-    os.makedirs(output_image_path)
+    return 'Running nnUNet inference...'
 
-## antsRegistrationSyNQuick # s: rigid + affine + deformable syn (3 stages)
-command1 = 'antsRegistrationSyNQuick.sh -d 3' + \
-' -m ' + input_image_path                     + \
-' -f ' + template                             + \
-' -t ' + 's'                                  + \
-' -o ' + output_image_path                    + \
-' -n ' + '16'
-# print(command1)
-# os.system(command1)
+def check_filenames(folder):
+    file_paths = glob.glob(f'{folder}/*.nii.gz')
+    for file_path in file_paths:
+        file_extensions = []
+        while True:
+            file_path, ext = os.path.splitext(file_path)
+            if ext:
+                file_extensions.insert(0, ext)
+            else:
+                break
+        file_extension = ''.join(file_extensions)
+        file_name = os.path.basename(file_path)
+        file_path = f'{file_path}{file_extension}'
+        print(f'file name: {file_name}')
+        print(f'file extension: {file_extension}')
+        print(f'absolute file path: {file_path}')
+        if not str(file_name).endswith('_0000'):
+            correct_filename(file_path, file_name, file_extension)
+
+def correct_filename(file_path, file_name, file_extension):
+    print('Changing filename')
+    new_file_name = f'{file_name}_0000{file_extension}' # extension for nnUNet
+    os.rename(file_path, os.path.join(os.path.dirname(file_path), new_file_name))
+
+# sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper  
