@@ -1,4 +1,5 @@
 import os, glob, shutil, subprocess
+import dicom2nifti
 from sys import path
 # from os import getcwd
 # path.append(getcwd() + "/a-eye_segmentation/3DUnet_TF1/model")
@@ -21,6 +22,10 @@ def main():
         os.makedirs(os.path.join(abs_path, aux_out))
     # Copy content from origin input folder into local input folder
     copy_folder(args_in, os.path.join(abs_path, aux_in))
+
+    # Convert to nifti
+    convert_to_nifti(os.path.join(abs_path, aux_in))
+
     # Check input filenames (need to be in nnUNet format (0000.nii.gz))
     check_filenames(os.path.join(abs_path, aux_in))
 
@@ -82,5 +87,16 @@ def correct_filename(file_path, file_name, file_extension):
     # print('Changing filename')
     new_file_name = f'{file_name}_0000{file_extension}' # extension for nnUNet
     os.rename(file_path, os.path.join(os.path.dirname(file_path), new_file_name))
+
+def convert_to_nifti(folder):
+    # Get a list of all DICOM folders in the input folder
+    dcm_folders = sorted([f.path for f in os.scandir(folder) if f.is_dir() and f.name != '.DS_Store'])
+    # Convert each DICOM folder to NIfTI format
+    for dcm_folder in dcm_folders:
+        filename = str(os.path.basename(dcm_folder) + '.nii.gz')
+        dicom2nifti.dicom_series_to_nifti(dcm_folder, f'{folder}/{filename}', reorient_nifti=False)
+        # cmd = ["dcm2niix", "-f", filename, "-z", "y", "-o", output_nifti_folder, input_dicom_folder]
+        # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)  # pass the list as input to Popen
+        # _ = process.communicate()[0]  # the [0] is to return just the output, because otherwise it would be outs, errs = proc.communicate()
 
 # sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper  
