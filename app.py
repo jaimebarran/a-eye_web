@@ -25,6 +25,6 @@ def predict():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
 
-# curl -X POST -H "Content-Type: application/json" -d '{"text":"sad"}' 0.0.0.0:5555/predict
+# curl -X POST -H "Content-Type: application/json" -d '{"text":"predict"}' 0.0.0.0:5000/predict
 # netstat -nlp | grep 5000
 # kill -9 441420
