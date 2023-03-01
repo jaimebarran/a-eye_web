@@ -1,14 +1,19 @@
 import os, glob, shutil, subprocess
 import dicom2nifti
 from sys import path
-# from os import getcwd
-# path.append(getcwd() + "/a-eye_segmentation/3DUnet_TF1/model")
-# from network import Unet_3D
-# import generate_h5
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-i', '--input', type=str, required=True, help='input folder')
+parser.add_argument('-o', '--output', type=str, required=True, help='output folder')
+args = parser.parse_args()
 
 # args
-args_in = '/home/jaimebarranco/Desktop/test_inference/input' # origin input folder
-args_out = '/home/jaimebarranco/Desktop/test_inference/output' # origin output folder
+# args_in = '/home/jaimebarranco/Desktop/test_inference/input' # origin input folder
+# args_out = '/home/jaimebarranco/Desktop/test_inference/output' # origin output folder
+args_in = args.input
+args_out = args.output
+
 shm_size = 10 # shared memory (gb)
 abs_path = '/mnt/sda1/Repos/a-eye/a-eye_segmentation/deep_learning/nnUNet/nnUNet'
 rel_path = '/opt/nnunet_resources'
