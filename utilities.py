@@ -2,17 +2,18 @@ import os, glob, shutil, subprocess
 import dicom2nifti
 from sys import path
 import argparse
+import logging
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--input', type=str, required=True, help='input folder')
-parser.add_argument('-o', '--output', type=str, required=True, help='output folder')
-args = parser.parse_args()
+# parser = argparse.ArgumentParser()
+# parser.add_argument('-i', '--input', type=str, required=True, help='input folder')
+# parser.add_argument('-o', '--output', type=str, required=True, help='output folder')
+# args = parser.parse_args()
 
 # args
-# args_in = '/home/jaimebarranco/Desktop/test_inference/input' # origin input folder
-# args_out = '/home/jaimebarranco/Desktop/test_inference/output' # origin output folder
-args_in = args.input
-args_out = args.output
+# args_in = args.input
+# args_out = args.output
+args_in = '/home/jaimebarranco/Desktop/test_inference/input' # origin input folder
+args_out = '/home/jaimebarranco/Desktop/test_inference/output' # origin output folder
 
 shm_size = 10 # shared memory (gb)
 abs_path = '/mnt/sda1/Repos/a-eye/a-eye_segmentation/deep_learning/nnUNet/nnUNet'
@@ -22,11 +23,11 @@ aux_out = f'nnUNet_inference/temp_inference/{args_out.split("/")[-1]}' # output 
 
 def main():
 
-    # Create output local folder
+    # Create output aux folder
     if not os.path.exists(os.path.join(abs_path, aux_out)):
         os.makedirs(os.path.join(abs_path, aux_out))
-    # Copy content from origin input folder into local input folder
-    copy_folder(args_in, os.path.join(abs_path, aux_in))
+    # # Copy content from origin input folder into local input folder
+    # copy_folder(args_in, os.path.join(abs_path, aux_in))
 
     # Convert to nifti
     convert_to_nifti(os.path.join(abs_path, aux_in))
@@ -36,7 +37,8 @@ def main():
 
     # inference command terminal
     command = f' \
-        sudo docker run \
+        echo "$SUDO_PWD" | sudo -S -s \
+        docker run --rm \
         --gpus device=0 \
         --shm-size={shm_size}gb \
         -v {abs_path}:{rel_path} \
@@ -49,15 +51,15 @@ def main():
         -p nnUNetPlansv2.1 \
         -t Task313_Eye \
     '
-    # print(command)
+    print(command)
+    logging.info(f'AEye: nnUNet inference command: \n{command}')
     os.system(command)
-    # process = subprocess.Popen(command, shell=True) # shell=True
 
-    # Copy local output folder into origin output folder
-    copy_folder(os.path.join(abs_path, aux_out), args_out)
-    # Remove local folders
-    delete_folder(os.path.join(abs_path, aux_in))
-    delete_folder(os.path.join(abs_path, aux_out))
+    # # Copy aux output folder into origin output folder
+    # copy_folder(os.path.join(abs_path, aux_out), args_out)
+    # # Remove aux folders
+    # delete_folder(os.path.join(abs_path, aux_in))
+    # delete_folder(os.path.join(abs_path, aux_out))
     
     return '\nDone! \n'
 
@@ -90,18 +92,21 @@ def check_filenames(folder):
 
 def correct_filename(file_path, file_name, file_extension):
     # print('Changing filename')
+    logging.info('AEYE: Changing filename to nnUNet format...')
     new_file_name = f'{file_name}_0000{file_extension}' # extension for nnUNet
     os.rename(file_path, os.path.join(os.path.dirname(file_path), new_file_name))
 
 def convert_to_nifti(folder):
     # Get a list of all DICOM folders in the input folder
     dcm_folders = sorted([f.path for f in os.scandir(folder) if f.is_dir() and f.name != '.DS_Store'])
-    # Convert each DICOM folder to NIfTI format
-    for dcm_folder in dcm_folders:
-        filename = str(os.path.basename(dcm_folder) + '.nii.gz')
-        dicom2nifti.dicom_series_to_nifti(dcm_folder, f'{folder}/{filename}', reorient_nifti=False)
-        # cmd = ["dcm2niix", "-f", filename, "-z", "y", "-o", output_nifti_folder, input_dicom_folder]
-        # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)  # pass the list as input to Popen
-        # _ = process.communicate()[0]  # the [0] is to return just the output, because otherwise it would be outs, errs = proc.communicate()
+    if len(dcm_folders) >0:
+        logging.info('AEye: Converting DICOM to NIfTI format...')
+        # Convert each DICOM folder to NIfTI format
+        for dcm_folder in dcm_folders:
+            filename = str(os.path.basename(dcm_folder) + '.nii.gz')
+            dicom2nifti.dicom_series_to_nifti(dcm_folder, f'{folder}/{filename}', reorient_nifti=False)
+            # cmd = ["dcm2niix", "-f", filename, "-z", "y", "-o", output_nifti_folder, input_dicom_folder]
+            # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)  # pass the list as input to Popen
+            # _ = process.communicate()[0]  # the [0] is to return just the output, because otherwise it would be outs, errs = proc.communicate()
 
-# sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper  
+# sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper
