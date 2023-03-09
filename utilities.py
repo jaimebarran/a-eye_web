@@ -1,19 +1,20 @@
 import os, glob, shutil, subprocess
 import dicom2nifti
-from sys import path
 import argparse
 import logging
 
-# parser = argparse.ArgumentParser()
-# parser.add_argument('-i', '--input', type=str, required=True, help='input folder')
-# parser.add_argument('-o', '--output', type=str, required=True, help='output folder')
-# args = parser.parse_args()
+enable_args = True
 
-# args
-# args_in = args.input
-# args_out = args.output
-args_in = '/home/jaimebarranco/Desktop/test_inference/input' # origin input folder
-args_out = '/home/jaimebarranco/Desktop/test_inference/output' # origin output folder
+if enable_args:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--input', type=str, required=True, help='input folder')
+    parser.add_argument('-o', '--output', type=str, required=True, help='output folder')
+    args = parser.parse_args()
+    args_in = args.input
+    args_out = args.output
+else:
+    args_in = '/home/jaimebarranco/Desktop/test_inference/input' # origin input folder
+    args_out = '/home/jaimebarranco/Desktop/test_inference/output' # origin output folder
 
 shm_size = 10 # shared memory (gb)
 abs_path = '/mnt/sda1/Repos/a-eye/a-eye_segmentation/deep_learning/nnUNet/nnUNet'
@@ -26,8 +27,8 @@ def main():
     # Create output aux folder
     if not os.path.exists(os.path.join(abs_path, aux_out)):
         os.makedirs(os.path.join(abs_path, aux_out))
-    # # Copy content from origin input folder into local input folder
-    # copy_folder(args_in, os.path.join(abs_path, aux_in))
+    # Copy content from origin input folder into local input folder
+    copy_folder(args_in, os.path.join(abs_path, aux_in))
 
     # Convert to nifti
     convert_to_nifti(os.path.join(abs_path, aux_in))
@@ -37,7 +38,7 @@ def main():
 
     # inference command terminal
     command = f' \
-        echo "$SUDO_PWD" | sudo -S -s \
+        echo $SUDO_PWD | sudo -S -s \
         docker run --rm \
         --gpus device=0 \
         --shm-size={shm_size}gb \
@@ -51,15 +52,15 @@ def main():
         -p nnUNetPlansv2.1 \
         -t Task313_Eye \
     '
-    print(command)
+    # print(command)
     logging.info(f'AEye: nnUNet inference command: \n{command}')
     os.system(command)
 
-    # # Copy aux output folder into origin output folder
-    # copy_folder(os.path.join(abs_path, aux_out), args_out)
-    # # Remove aux folders
-    # delete_folder(os.path.join(abs_path, aux_in))
-    # delete_folder(os.path.join(abs_path, aux_out))
+    # Copy aux output folder into origin output folder
+    copy_folder(os.path.join(abs_path, aux_out), args_out)
+    # Remove aux folders
+    delete_folder(os.path.join(abs_path, aux_in))
+    delete_folder(os.path.join(abs_path, aux_out))
     
     return '\nDone! \n'
 
@@ -108,5 +109,3 @@ def convert_to_nifti(folder):
             # cmd = ["dcm2niix", "-f", filename, "-z", "y", "-o", output_nifti_folder, input_dicom_folder]
             # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)  # pass the list as input to Popen
             # _ = process.communicate()[0]  # the [0] is to return just the output, because otherwise it would be outs, errs = proc.communicate()
-
-# sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper
