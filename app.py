@@ -1,38 +1,30 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, request, redirect, url_for
 from utilities import main
 import logging
 
 app = Flask(__name__)
 
 # Set Flask environment to development (to print console)
-os.environ['FLASK_ENV'] = 'development'
+# export FLASK_APP=./a-eye_web/app.py
+os.environ['FLASK_APP'] = './a-eye_web/app.py' # for flask run
+os.environ['FLASK_DEBUG'] = 'True' # to print console
 
 # Manage logs
 logging.basicConfig(filename='./a-eye_web/app.log', level=logging.DEBUG,
     format='%(asctime)s %(levelname)s %(name)s %(message)s')
 
-# Through post
-@app.post('/predict')
-def predict():
-    req = request.json
-    try:
-        text = req['text']
-    except KeyError:
-        return jsonify({'error': 'No text sent'})
-        
-    if text == 'predict':
-        return main()
-    else:
-        return 'Error: incorrect request!! \n'
 
-# Through get (be in that page; index  in this case)
-# @app.get('/predict')
-# def predict():
-#     return main()
+@app.route('/')
+def home():
+    return render_template('base.html')
+
+@app.route('/predict')
+def predict():
+    return main()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True) # debug=True to development mode
 
 
 # ----------------------------------------------------------------------------------------------

@@ -2,9 +2,13 @@ import os, glob, shutil, subprocess
 import dicom2nifti
 import argparse
 import logging
+from flask import redirect, url_for
 
-enable_args = True
+# bools
+enable_args = False
+use_ext_folders = False
 
+# input/output folders
 if enable_args:
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', type=str, required=True, help='input folder')
@@ -16,6 +20,7 @@ else:
     args_in = '/home/jaimebarranco/Desktop/test_inference/input' # origin input folder
     args_out = '/home/jaimebarranco/Desktop/test_inference/output' # origin output folder
 
+# nnUNet
 shm_size = 10 # shared memory (gb)
 abs_path = '/mnt/sda1/Repos/a-eye/a-eye_segmentation/deep_learning/nnUNet/nnUNet'
 rel_path = '/opt/nnunet_resources'
@@ -23,12 +28,16 @@ aux_in = f'nnUNet_inference/temp_inference/{args_in.split("/")[-1]}' # input aux
 aux_out = f'nnUNet_inference/temp_inference/{args_out.split("/")[-1]}' # output aux folder
 
 def main():
+    ''' Main function '''
 
-    # Create output aux folder
-    if not os.path.exists(os.path.join(abs_path, aux_out)):
-        os.makedirs(os.path.join(abs_path, aux_out))
-    # Copy content from origin input folder into local input folder
-    copy_folder(args_in, os.path.join(abs_path, aux_in))
+    start_docker()
+
+    if use_ext_folders:
+        # Create output aux folder
+        if not os.path.exists(os.path.join(abs_path, aux_out)):
+            os.makedirs(os.path.join(abs_path, aux_out))
+        # Copy content from origin input folder into local input folder
+        copy_folder(args_in, os.path.join(abs_path, aux_in))
 
     # Convert to nifti
     convert_to_nifti(os.path.join(abs_path, aux_in))
@@ -38,7 +47,7 @@ def main():
 
     # inference command terminal
     command = f' \
-        echo $SUDO_PWD | sudo -S -s \
+        printf "%s" $SUDO_PWD | sudo -S -s \
         docker run --rm \
         --gpus device=0 \
         --shm-size={shm_size}gb \
@@ -52,17 +61,23 @@ def main():
         -p nnUNetPlansv2.1 \
         -t Task313_Eye \
     '
+
     # print(command)
     logging.info(f'AEye: nnUNet inference command: \n{command}')
+
     os.system(command)
 
-    # Copy aux output folder into origin output folder
-    copy_folder(os.path.join(abs_path, aux_out), args_out)
-    # Remove aux folders
-    delete_folder(os.path.join(abs_path, aux_in))
-    delete_folder(os.path.join(abs_path, aux_out))
+    if use_ext_folders:
+        # Copy aux output folder into origin output folder
+        copy_folder(os.path.join(abs_path, aux_out), args_out)
+        # Remove aux folders
+        delete_folder(os.path.join(abs_path, aux_in))
+        delete_folder(os.path.join(abs_path, aux_out))
     
-    return '\nDone! \n'
+    print('Done!')
+    logging.info('AEye: Done!')
+
+    return redirect(url_for("home"))
 
 def copy_folder(source, destination):
     if os.path.exists(destination):
@@ -109,3 +124,19 @@ def convert_to_nifti(folder):
             # cmd = ["dcm2niix", "-f", filename, "-z", "y", "-o", output_nifti_folder, input_dicom_folder]
             # process = subprocess.Popen(cmd, stdout=subprocess.PIPE)  # pass the list as input to Popen
             # _ = process.communicate()[0]  # the [0] is to return just the output, because otherwise it would be outs, errs = proc.communicate()
+
+def start_docker():
+    # Check if Docker is already running
+    try:
+        os.system("docker version")
+        print("Docker is already running")
+    except:
+        # If Docker is not running, start it
+        print("Docker was not initialized!")
+        logging.warning("Docker was not initialized!")
+        print("Initializing docker...")
+        logging.info("Initializing docker...")
+        os.system("systemctl start docker")
+        os.system('sleep 10')
+        print("Docker has been started")
+        logging.info("Docker has been started")
