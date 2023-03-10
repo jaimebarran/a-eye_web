@@ -78,8 +78,6 @@ def main():
     print('Done!')
     logging.info('AEye: Done!')
 
-    return '\nDone!\n'
-
 def copy_folder(source, destination):
     if os.path.exists(destination):
         shutil.rmtree(destination)
