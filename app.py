@@ -2,6 +2,10 @@ import os
 from flask import Flask, request, jsonify, render_template, request, redirect, url_for
 from utilities import main
 import logging
+from flask_sqlalchemy import SQLAlchemy
+
+# ----------------------------------------------------------------------------------------------
+# FLASK
 
 app = Flask(__name__)
 
@@ -10,20 +14,34 @@ app = Flask(__name__)
 os.environ['FLASK_APP'] = './a-eye_web/app.py' # for flask run
 os.environ['FLASK_DEBUG'] = 'True' # to print console
 
+# /// = relative path, //// = absolute path
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
 # Manage logs
 logging.basicConfig(filename='./a-eye_web/app.log', level=logging.DEBUG,
     format='%(asctime)s %(levelname)s %(name)s %(message)s')
 
 
+# ----------------------------------------------------------------------------------------------
+# ROUTES
+
 @app.route('/')
 def home():
-    return render_template('base.html')
+    return render_template('base.html', done=False)
 
 @app.route('/predict')
 def predict():
-    return main()
+    main()
+    return render_template('base.html', done=True)
+
+
+# ----------------------------------------------------------------------------------------------
+# MAIN
 
 if __name__ == '__main__':
+    db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True) # debug=True to development mode
 
 

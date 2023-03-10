@@ -20,6 +20,8 @@ else:
     args_in = '/home/jaimebarranco/Desktop/test_inference/input' # origin input folder
     args_out = '/home/jaimebarranco/Desktop/test_inference/output' # origin output folder
 
+sudo_pwd = os.environ['SUDO_PWD']
+
 # nnUNet
 shm_size = 10 # shared memory (gb)
 abs_path = '/mnt/sda1/Repos/a-eye/a-eye_segmentation/deep_learning/nnUNet/nnUNet'
@@ -47,7 +49,7 @@ def main():
 
     # inference command terminal
     command = f' \
-        printf "%s" $SUDO_PWD | sudo -S -s \
+        echo {sudo_pwd} | sudo -S -s \
         docker run --rm \
         --gpus device=0 \
         --shm-size={shm_size}gb \
@@ -62,9 +64,8 @@ def main():
         -t Task313_Eye \
     '
 
-    # print(command)
+    print(command)
     logging.info(f'AEye: nnUNet inference command: \n{command}')
-
     os.system(command)
 
     if use_ext_folders:
@@ -77,7 +78,7 @@ def main():
     print('Done!')
     logging.info('AEye: Done!')
 
-    return redirect(url_for("home"))
+    return '\nDone!\n'
 
 def copy_folder(source, destination):
     if os.path.exists(destination):
