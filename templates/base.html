@@ -1,26 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html >
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AEye</title>
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+  <meta charset="UTF-8">
+  
+  <!-- Make it compatible to mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Heart Disease Percent</title>
+  
 </head>
 
-<body>
-    <div style="margin-top: 50px;" class="ui container">
-        <h1 class="ui center aligned header">AEye automated segmentation</h1>
-        <hr>
-        <a class="ui blue button" href="/predict">Predict</a>
-        {% if done == True %}
-        <span class="ui green label">Done</span>
-        {% else %}
-        <span class="ui gray label">Ready to inference</span>
-        {% endif %}
-    </div>
-</body>
+<body style="background: #000;">
+ <div class="login">
+	<h1 style="color:Violet;">Heart disease prediction</h1>
 
+     <!-- Action is where the data is sent. In our case, predict page.
+     If action is omitted, it assumed to be the current page -->
+    <form action="{{ url_for('predict')}}"method="post">
+    	<input type="text" name="percent biking" placeholder="Percent population biking" required="required" /><br>
+        <input type="text" name="percent smoking" placeholder="Percent population smoking" required="required" /><p>
+
+        <button type="submit" class="btn btn-primary btn-block btn-large">Predict percent population with heart disease</button></p>
+    </form>
+
+   <br>
+   <br>
+
+ </div>
+
+
+</body>
 </html>

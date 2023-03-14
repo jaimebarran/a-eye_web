@@ -23,12 +23,12 @@ logging.basicConfig(filename='./a-eye_web/app.log', level=logging.DEBUG,
 
 @app.route('/')
 def home():
-    return render_template('base.html', done=False)
+    return render_template('base.html')
 
 @app.route('/predict')
 def predict():
     main()
-    return render_template('base.html', done=True)
+    return render_template('base.html')
 
 # ----------------------------------------------------------------------------------------------
 # MAIN
