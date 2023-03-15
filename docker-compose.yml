@@ -1,0 +1,11 @@
+version:  "0.0"
+
+services:
+  aeye:
+    container_name: aeye
+    image: jaimebarran/aeye
+    ports:
+      - "5000:5000"
+    build:
+      context: .
+      dockerfile: Dockerfile

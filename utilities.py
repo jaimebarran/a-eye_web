@@ -20,7 +20,8 @@ else:
     args_in = '/home/jaimebarranco/Desktop/test_inference/input' # origin input folder
     args_out = '/home/jaimebarranco/Desktop/test_inference/output' # origin output folder
 
-sudo_pwd = os.environ['SUDO_PWD']
+# sudo_pwd = os.environ['SUDO_PWD']
+sudo_pwd = 'Patatahitech2.0'
 
 # nnUNet
 shm_size = 10 # shared memory (gb)

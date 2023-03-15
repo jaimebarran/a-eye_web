@@ -10,11 +10,11 @@ app = Flask(__name__)
 
 # Set Flask environment to development (to print console)
 # os.system('export FLASK_APP=./a-eye_web/app.py')
-os.environ['FLASK_APP'] = './a-eye_web/app.py' # for flask run
+os.environ['FLASK_APP'] = './app.py' # for flask run
 os.environ['FLASK_DEBUG'] = 'True' # to print console
 
 # Manage logs
-logging.basicConfig(filename='./a-eye_web/app.log', level=logging.DEBUG,
+logging.basicConfig(filename='./app.log', level=logging.DEBUG,
     format='%(asctime)s %(levelname)s %(name)s %(message)s')
 
 
@@ -35,9 +35,7 @@ def predict():
 # MAIN
 
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', port=5000, debug=True) # debug=True to development mode
-    app.run()
-
+    app.run(host='0.0.0.0', port=5000, debug=True) # debug=True to development mode
 
 # ----------------------------------------------------------------------------------------------
 # UTILS
