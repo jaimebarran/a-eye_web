@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, jsonify, render_template, request, redirect, url_for
-from utilities import main
 import logging
+from utilities import main
 
 # ----------------------------------------------------------------------------------------------
 # FLASK
@@ -29,6 +29,7 @@ def home():
 def predict():
     main()
     return render_template('base.html')
+
 
 # ----------------------------------------------------------------------------------------------
 # MAIN
