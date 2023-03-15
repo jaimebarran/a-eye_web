@@ -23,12 +23,12 @@ logging.basicConfig(filename='./app.log', level=logging.DEBUG,
 
 @app.route('/')
 def home():
-    return render_template('base.html')
+    return render_template('base.html', done=False)
 
 @app.route('/predict')
 def predict():
     main()
-    return render_template('base.html')
+    return render_template('base.html', done=True)
 
 
 # ----------------------------------------------------------------------------------------------
