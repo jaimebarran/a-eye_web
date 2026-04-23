@@ -1,14 +1,69 @@
+/* ============================================================
+   CSS Custom Properties — light mode defaults
+   ============================================================ */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #212529;
+    --card-bg: #c1e1be;
+    --title-bg: #ffffff;
+    --faq-odd-bg: #c1e1be;
+    --faq-even-bg: #ffffff;
+    --border-color: #ddd;
+    --muted-text: #6c757d;
+    --link-color: #007849;
+    --stat-value-color: green;
+    --list-item-bg: #ffffff;
+    --list-item-border: #dee2e6;
+    --progress-bg: #e9ecef;
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] {
+    --bg-color: #1a1a1a;
+    --text-color: #e0e0e0;
+    --card-bg: #1e3a2a;
+    --title-bg: #252525;
+    --faq-odd-bg: #1e3a2a;
+    --faq-even-bg: #2a2a2a;
+    --border-color: #444;
+    --muted-text: #adb5bd;
+    --link-color: #49a93e;
+    --stat-value-color: #49a93e;
+    --list-item-bg: #2a2a2a;
+    --list-item-border: #444;
+    --progress-bg: #333333;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
 body {
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    padding-top: 80px; /* Match navbar height */
+    padding-top: 80px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+a {
+    color: var(--link-color);
+}
+
+a:hover {
+    color: var(--link-color);
+    filter: brightness(0.8);
+    text-decoration: underline;
+}
+
+/* ============================================================
+   Navbar
+   ============================================================ */
 .navbar {
-    background-color: #007849; /* Green background */
-    height: 80px; /* Corrected fixed height */
+    background-color: #007849;
+    height: 80px;
 }
 
 .navbar-brand {
@@ -19,7 +74,7 @@ body {
 }
 
 .navbar-nav .nav-link {
-    line-height: 80px; /* Align vertically in navbar */
+    line-height: 80px;
     color: #ffffff;
     font-weight: 500;
     margin-right: 15px;
@@ -31,21 +86,47 @@ body {
     font-weight: bold;
 }
 
-.partner-card {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-    height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.navbar-nav .nav-link:hover {
+    color: #000000 !important;
 }
 
-.partner-card img {
-    max-height: 100%;
-    max-width: 100%;
+.navbar-nav .nav-link.active {
+    color: #000000 !important;
+    font-weight: bold;
 }
 
+/* Dark mode toggle button */
+.dark-mode-toggle {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1.1rem;
+    line-height: 80px;
+    padding: 0 0.75rem;
+    cursor: pointer;
+    opacity: 0.85;
+}
+
+.dark-mode-toggle:hover {
+    opacity: 1;
+    color: #ffffff;
+}
+
+.dark-mode-toggle .fas {
+    margin-right: 0;
+}
+
+[data-theme="dark"] .navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255,0.7)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* ============================================================
+   Welcome page
+   ============================================================ */
 .animated-background {
     position: fixed;
     top: 0;
@@ -84,26 +165,41 @@ body {
     margin-top: 10px;
 }
 
+/* ============================================================
+   Title / Section headers
+   ============================================================ */
 .main-title {
     font-size: 2.5em;
     margin: 0;
 }
 
 .title-container {
-    background-color: #ffffff;
+    background-color: var(--title-bg);
     height: 150px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+    transition: background-color 0.2s ease;
 }
 
-/* FAQ */
+/* ============================================================
+   FAQ
+   ============================================================ */
 .faq-item {
     width: 100vw;
     padding: 50px;
     box-sizing: border-box;
     margin-left: calc(-50vw + 50%);
+    transition: background-color 0.2s ease;
+}
+
+.faq-item:nth-child(odd) {
+    background-color: var(--faq-odd-bg);
+}
+
+.faq-item:nth-child(even) {
+    background-color: var(--faq-even-bg);
 }
 
 .faq-item .faq-content {
@@ -123,9 +219,28 @@ body {
     font-size: 1em;
 }
 
-/* Collaborators */
+/* ============================================================
+   About / Collaborators
+   ============================================================ */
+.partner-card {
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    text-align: center;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-color);
+    transition: background-color 0.2s ease;
+}
+
+.partner-card img {
+    max-height: 100%;
+    max-width: 100%;
+}
+
 .collaborator-card {
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     padding: 15px;
     text-align: center;
     height: 350px;
@@ -133,9 +248,10 @@ body {
     flex-direction: column;
     justify-content: space-between;
     margin-bottom: 20px;
-    background-color: #c1e1be;
+    background-color: var(--card-bg);
     border-radius: 5px;
     align-items: center;
+    transition: background-color 0.2s ease;
 }
 
 .collaborator-card img {
@@ -154,7 +270,7 @@ body {
 .collaborator-card .email-section {
     height: 50px;
     line-height: 50px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
     text-align: center;
 }
 
@@ -164,7 +280,9 @@ body {
     text-align: center;
 }
 
-/* User stats */
+/* ============================================================
+   User stats
+   ============================================================ */
 .user-title {
     font-size: 2.5em;
     margin-bottom: 20px;
@@ -172,7 +290,7 @@ body {
 
 .user-count {
     font-size: 1.5em;
-    color: #007849;
+    color: var(--link-color);
 }
 
 .user-container {
@@ -202,14 +320,16 @@ body {
 
 .value {
     font-size: 3em;
-    color: green;
+    color: var(--stat-value-color);
 }
 
 .label {
     font-size: 0.8em;
 }
 
-/* Buttons */
+/* ============================================================
+   Buttons
+   ============================================================ */
 .btn-success {
     background-color: #28a745;
     border-color: #28a745;
@@ -233,17 +353,24 @@ body {
     width: 100%;
 }
 
+/* ============================================================
+   Misc
+   ============================================================ */
 .fas {
     margin-right: 0.5rem;
 }
 
 .list-group-item {
     text-align: left;
+    background-color: var(--list-item-bg);
+    border-color: var(--list-item-border);
+    color: var(--text-color);
+    transition: background-color 0.2s ease;
 }
 
 .progress {
     width: 100%;
-    background-color: #e9ecef;
+    background-color: var(--progress-bg);
     border-radius: 0.25rem;
     overflow: hidden;
 }
@@ -257,7 +384,9 @@ body {
     font-weight: bold;
 }
 
-/* Header / Logo */
+/* ============================================================
+   Header / Logo
+   ============================================================ */
 .custom-header {
     background-color: #007849;
     height: 80px;
@@ -269,18 +398,25 @@ body {
     max-height: 60px;
 }
 
-.navbar-nav .nav-link:hover {
-    color: #000000 !important;
-}
-
-.navbar-nav .nav-link.active {
-    color: #000000 !important; /* Same as hover color */
-    font-weight: bold; /* Optional: to emphasize the active link */
-}
-
 .gelbert-logo {
     height: auto;
     max-height: 70px;
     width: 300px;
     object-fit: contain;
+}
+
+/* ============================================================
+   Dark mode — Bootstrap component overrides
+   ============================================================ */
+[data-theme="dark"] .text-muted {
+    color: var(--muted-text) !important;
+}
+
+[data-theme="dark"] a {
+    color: var(--link-color);
+}
+
+[data-theme="dark"] .btn-secondary {
+    background-color: #555555;
+    border-color: #555555;
 }
