@@ -103,33 +103,24 @@ def users():
     
     # Generate the choropleth map
     fig = px.choropleth(df, locations="Country", locationmode='ISO-3', color="Count",
-                        color_continuous_scale="Greens", range_color=(0, high_scale_nb_users),
-                        width=1200, height=675)  # Set the width and height of the figure
-    
+                        color_continuous_scale="Greens", range_color=(0, high_scale_nb_users))
+
     fig.update_layout(
+        autosize=True,
         margin={"r":0,"t":0,"l":0,"b":0},
-        geo=dict(
-            showframe=False,
-            showcoastlines=False,
-            projection_type='equirectangular',
-            # Center the map
-            lataxis=dict(range=[-90, 90]),  # Adjust latitude range to exclude Antarctica
-            lonaxis=dict(range=[-180, 180])  # Adjust longitude range to show the whole world
-        )
-    )
-    
-    fig.update_layout(
         dragmode=False,
         geo=dict(
             showframe=False,
             showcoastlines=False,
             projection_type='equirectangular',
-            center=dict(lat=0, lon=0)  # Center the map
+            lataxis=dict(range=[-90, 90]),
+            lonaxis=dict(range=[-180, 180]),
+            center=dict(lat=0, lon=0)
         ),
-        coloraxis_showscale=False  # Remove the color scale
+        coloraxis_showscale=False
     )
-    
-    map_html = fig.to_html(full_html=False)
+
+    map_html = fig.to_html(full_html=False, config={'responsive': True})
     
     return render_template('users.html', total_users=total_users, cases_processed=cases_processed, total_institutions=total_institutions, map_html=map_html)
 

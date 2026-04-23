@@ -136,6 +136,8 @@ dmypy.json
 static/*
 !static/images/
 !static/images/**
+!static/css/
+!static/css/**
 nnUNet/
 nnUNetv2/
 *.err
