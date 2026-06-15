@@ -24,7 +24,6 @@ apptainer exec \
     -i /input \
     -o /output \
     -tr nnUNetTrainerV2 \
-    -ctr nnUNetTrainerV2CascadeFullRes \
     -m 3d_fullres \
     -p nnUNetPlansv2.1 \
     -t Task313_Eye
