@@ -1493,3 +1493,20 @@ details[open] .summary-chevron {
     }
 }
 
+/* ============================================================
+   Segmentation page — trailing space
+   ============================================================ */
+
+/* The selected-file list and the results section both grow downwards and there
+   is no footer beneath them, so without this the last row sits flush against
+   the bottom of the viewport. */
+.segmentation-bottom-spacer {
+    height: 6rem;
+}
+
+@media (max-width: 767.98px) {
+    .segmentation-bottom-spacer {
+        height: 4rem;
+    }
+}
+

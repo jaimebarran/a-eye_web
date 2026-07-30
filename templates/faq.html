@@ -7,40 +7,126 @@
     <h2 class="main-title">Frequently Asked Questions</h2>
 </div>
 <div class="container">
+
+    <h4 class="mt-4 mb-3">Account and access</h4>
+
     <div class="faq-item">
         <div class="faq-content">
             <p><strong>I didn't receive the activation link. How do I proceed?</strong></p>
-            <p>First, please check your spam. Second, if you did not receive the email, you can use the forgot password feature on the <a href="http://localhost:5000/login">login page</a> to get back an activation link.</p>
-        </div>
-    </div>
-    <div class="faq-item">
-        <div class="faq-content">
-            <p><strong>Is it possible to submit DICOM images directly?</strong></p>
-            <p>No, the currently only supported formats are compressed Nifti: ".nii.gz" and .zip. The zip can include DICOM or Nifti images, and several images if needed. When you upload a zip, the content is extracted, and the DICOM images are converted into Nifti (.nii.gz). Please read the tutorial for help on format conversion. You can have additional help watching this <a href="https://www.youtube.com/watch?v=DMGWdi6Z73s&ab_channel=AndrewJahn">video</a> or reading this <a href="https://andysbrainbook.readthedocs.io/en/latest/MRIcroGL/MRIcroGL_2_dcm2nii.html">book</a>.</p>
-        </div>
-    </div>
-    <div class="faq-item">
-        <div class="faq-content">
-            <p><strong>The pipeline finished, but I have an issue on the obtained results. How to report a bug?</strong></p>
-            <p>To report an issue on the platform or the pipelines, please contact: <a href="mailto:jaime.barrancohernandez@hevs.ch">jaime.barrancohernandez@hevs.ch</a>.</p>
-        </div>
-    </div>
-    <div class="faq-item">
-        <div class="faq-content">
-            <p><strong>Where is my medical data stored and is it exposed?</strong></p>
-            <p>Imaging data is temporarily stored on a secured physical server at the HES-SO in Sion (Valais) and is kept for improving A-eye's models performance. Your images and our outputs are really useful for us for continuos integration and development (CI/CD) :)</p>
+            <p>First, please check your spam folder. If the email still hasn't arrived, use the "Forgot password" feature on the <a href="{{ url_for('routes.login') }}">login page</a> to request a new activation link.</p>
         </div>
     </div>
     <div class="faq-item">
         <div class="faq-content">
             <p><strong>How can I reset my password if I forgot it?</strong></p>
-            <p>If you forgot your password, you can reset it by clicking on the "Forgot Password" link on the login page. You will be prompted to enter your registered email address, and a password reset link will be sent to you. Follow the instructions in the email to reset your password.</p>
+            <p>Click "Forgot Password" on the login page. You will be prompted for your registered email address, and a reset link will be sent to you. Follow the instructions in that email to set a new password.</p>
         </div>
     </div>
     <div class="faq-item">
         <div class="faq-content">
             <p><strong>I can't create an account.</strong></p>
-            <p>We allow our partners, universities, and various institutions to use our web platform. If you are unable to create an account, it is possible that your email address contains a domain name that is unknown to us. If you believe you are eligible to use the web platform and are unable to create an account, please contact A-eye web platform support at the following address: <a href="mailto:jaime.barrancohernandez@hevs.ch">jaime.barrancohernandez@hevs.ch</p>
+            <p>We allow our partners, universities, and various institutions to use our web platform. If you are unable to create an account, it is possible that your email address contains a domain name that is unknown to us. If you believe you are eligible and still cannot register, please contact us at <a href="mailto:jaime.barrancohernandez@hevs.ch">jaime.barrancohernandez@hevs.ch</a>.</p>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-3">Uploading data</h4>
+
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>Which file formats can I upload?</strong></p>
+            <p>You can select <code>.nii</code>, <code>.nii.gz</code>, <code>.zip</code> and <code>.7z</code> files. Archives may contain NIfTI images or DICOM folders — the content is extracted automatically, and DICOM series are converted to NIfTI before segmentation. Only <strong>human T1-weighted</strong> images are supported.</p>
+        </div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>Can I submit DICOM images directly?</strong></p>
+            <p>Not as individual files — DICOM has to be inside a <code>.zip</code> or <code>.7z</code> archive, since a DICOM series is a folder of slices rather than a single file. The platform detects the DICOM folder and converts it for you. If you prefer to convert beforehand, this <a href="https://www.youtube.com/watch?v=DMGWdi6Z73s&ab_channel=AndrewJahn" target="_blank" rel="noopener">video</a> and this <a href="https://andysbrainbook.readthedocs.io/en/latest/MRIcroGL/MRIcroGL_2_dcm2nii.html" target="_blank" rel="noopener">book chapter</a> explain how.</p>
+        </div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>How many cases can I submit at once?</strong></p>
+            <p>Up to <strong>10 cases</strong> per submission. A single archive may contain several cases, and the counter on the upload list shows how many have been detected. Files that would push you past the limit are rejected with an explanation.</p>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-3">Running a segmentation</h4>
+
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>Can I use the platform in several tabs at the same time?</strong></p>
+            <p><strong>No — please use a single tab.</strong> All of your work is kept in one working folder on the server, tied to your account rather than to a browser tab. Starting a new upload in a second tab clears that folder, so the first tab's results are no longer available: its viewers will fail to open and its download will no longer work. A results viewer that is <em>already</em> open keeps displaying what it has loaded, which can make the first tab look healthy when its data is in fact gone. Finish and download one run before starting the next.</p>
+        </div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>How long does a segmentation take, and can I close the page?</strong></p>
+            <p>Your job is submitted to our HPC cluster, so the total time depends on how many cases you sent and on how busy the cluster is — typically a few minutes once the job starts running. <strong>Keep the tab open until it finishes.</strong> A run is limited to one hour, after which the request times out.</p>
+        </div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>What happens if I reload or leave the segmentation page while a job is running?</strong></p>
+            <p>Returning to the segmentation page cancels any job you currently have running on the cluster, and the same is true of pressing Reset or starting a new upload. This is deliberate — it prevents abandoned jobs from occupying the cluster. If you reload by accident, simply upload your files again and restart.</p>
+        </div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>The segmentation failed. What should I do?</strong></p>
+            <p>Your working folder is cleared when a run fails, so start again with a fresh upload. Because the whole submission runs as one cluster job, a single problematic image causes the entire batch to fail — if a retry fails too, try submitting the cases one at a time to identify which one is responsible. Check as well that the images really are human T1-weighted scans. If it keeps failing, contact us at <a href="mailto:jaime.barrancohernandez@hevs.ch">jaime.barrancohernandez@hevs.ch</a>.</p>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-3">Results</h4>
+
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>What is inside the results archive?</strong></p>
+            <p>A single <code>.zip</code> containing, for each case:</p>
+            <ul>
+                <li>the per-eye segmentation masks — <code>_left.nii.gz</code>, <code>_right.nii.gz</code> and the merged <code>_both.nii.gz</code>;</li>
+                <li>the cropped per-eye masks used for the biomarkers — <code>_left_cropped.nii.gz</code>, <code>_right_cropped.nii.gz</code>;</li>
+                <li>details of the inference — <code>postprocessing.json</code>, <code>plans.pkl</code> and <code>prediction_time.txt</code>;</li>
+                <li>the logs of your run, under <code>logs/</code>;</li>
+                <li>the <a href="{{ url_for('routes.serve_license') }}" download>license agreement</a>;</li>
+                <li>and, if you extracted biomarkers, the axial length visualisations (<code>.png</code>) plus a summary table (<code>biomarkers.csv</code>).</li>
+            </ul>
+        </div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>Why isn't my uploaded image in the results archive?</strong></p>
+            <p>Your original scan is deliberately not returned, because we do not keep it — it is deleted from our servers once your results have been produced. The segmentation masks are aligned to your original image, so you can overlay them on your own copy. Please keep that copy.</p>
+        </div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>Do the logs in my download contain other users' information?</strong></p>
+            <p>No. Each run writes to its own log, and only that log is placed in your archive. The logs describe your own submission — the files processed, the cluster job, and any errors — and never another user's activity.</p>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-3">Data and privacy</h4>
+
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>Where is my medical data stored, and is it exposed?</strong></p>
+            <p>Processing takes place on secured infrastructure at the HES-SO in Sion (Valais). Your uploaded images are used only to produce your results and are <strong>not retained</strong> afterwards. The resulting segmentations and biomarkers are archived on our secured server and are used to monitor and improve A-eye's performance. Nothing is shared with third parties, and no data is publicly accessible.</p>
+        </div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>Am I allowed to upload patient data?</strong></p>
+            <p>Only if you are authorised to do so. By uploading, you confirm that the transfer complies with the ethics approval and Data Transfer Agreements covering your data — you remain solely responsible for that compliance. Both confirmations must be ticked before an upload can start.</p>
+        </div>
+    </div>
+
+    <h4 class="mt-4 mb-3">Support</h4>
+
+    <div class="faq-item">
+        <div class="faq-content">
+            <p><strong>The pipeline finished, but there is a problem with the results. How do I report a bug?</strong></p>
+            <p>Please write to <a href="mailto:jaime.barrancohernandez@hevs.ch">jaime.barrancohernandez@hevs.ch</a>. Including the <code>logs/</code> folder from your results archive helps considerably, as it records exactly what happened during your run.</p>
         </div>
     </div>
 </div>

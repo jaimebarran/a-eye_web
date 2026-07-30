@@ -29,10 +29,13 @@
                     <strong>axial length</strong> (mm) and <strong>volumetry</strong> (mm³) per structure.
                     <br><br>Results are provided in a <code>.zip</code> archive containing:
                     <ul class="mt-1 mb-0">
-                        <li>the original input image (<code>_raw.nii.gz</code>)</li>
-                        <li>per-eye segmentation masks — left, right, and merged (<code>.nii.gz</code>)</li>
+                        <li>per-eye segmentation masks — left, right, and merged (<code>_left.nii.gz</code>, <code>_right.nii.gz</code>, <code>_both.nii.gz</code>)</li>
+                        <li>the cropped per-eye masks used for the biomarkers (<code>_left_cropped.nii.gz</code>, <code>_right_cropped.nii.gz</code>)</li>
+                        <li>inference details — <code>postprocessing.json</code>, <code>plans.pkl</code>, <code>prediction_time.txt</code></li>
+                        <li>the logs of your own run (<code>logs/</code>)</li>
                         <li><em>if biomarkers are extracted:</em> axial length visualisations (<code>.png</code>) and a summary table (<code>biomarkers.csv</code>)</li>
                     </ul>
+                    <p class="mt-2 mb-0"><em>Your uploaded image is not included — it is never kept on our servers, so keep your own copy.</em></p>
                 </p>
                 <p class="mt-1 mb-0 text-muted">
                 Reference: <em><a href="https://doi.org/10.1371/journal.pone.0352257">A-eye paper </a></em>
@@ -197,6 +200,10 @@
         </div>
     </div>
 </div>
+
+<!-- Breathing room: the file list and the results grow downwards, and there is
+     no footer to sit against, so the page would otherwise end flush. -->
+<div class="segmentation-bottom-spacer" aria-hidden="true"></div>
 
 <!-- modal -->
 <div id="segmentation-popup-notice" class="modal" tabindex="-1">

@@ -48,11 +48,6 @@
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="https://hub.docker.com/r/jaimebarran/fw_gear_aeye" target="_blank" rel="noopener">
-                            <i class="fa-brands fa-docker"></i> Docker image (Docker Hub)
-                        </a>
-                    </li>
-                    <li>
                         <a class="dropdown-item" href="https://github.com/jaimebarran/a-eye" target="_blank" rel="noopener">
                             <i class="fa-brands fa-github"></i> Source code (GitHub)
                         </a>
@@ -156,16 +151,18 @@
                 <li><code>.zip</code> / <code>.7z</code> — archive of NIfTI or DICOM files</li>
                 <li><code>.dcm</code> — DICOM (inside an archive)</li>
             </ul>
-            <p class="welcome-format-note">T1-weighted sequences only. Up to 5 cases per submission.</p>
+            <p class="welcome-format-note">T1-weighted sequences only. Up to 10 cases per submission.</p>
         </div>
         <div class="welcome-format-block">
             <h3 class="welcome-format-title"><i class="fa-solid fa-file-zipper"></i> What you get back</h3>
             <ul class="welcome-format-list">
                 <li>Per-eye masks — left, right, merged (<code>.nii.gz</code>)</li>
+                <li>Cropped per-eye masks used for the biomarkers</li>
+                <li>Inference details and the logs of your run</li>
                 <li>Axial length visualisations (<code>.png</code>)</li>
                 <li>Biomarkers summary table (<code>biomarkers.csv</code>)</li>
             </ul>
-            <p class="welcome-format-note">All results packaged in a single <code>.zip</code> download, together with the <a href="{{ url_for('routes.serve_license') }}" download>license agreement</a>.</p>
+            <p class="welcome-format-note">All results packaged in a single <code>.zip</code> download, together with the <a href="{{ url_for('routes.serve_license') }}" download>license agreement</a>. Your uploaded image is not returned and is not kept on our servers — keep your own copy.</p>
         </div>
     </div>
 </section>
