@@ -29,7 +29,7 @@ services:
       - ./data:/app/data
       - ./logs:/app/logs
       - ./static/upload:/app/static/upload
-      - /mnt/filer01/MatTechLab/jaime.barranco/A-eye/A-eye_web/data:/app/filer01
+      - /mnt/filer01/A-eye_web/data:/app/filer01
       - ${A_EYE_SSH_DIR_PROD:-/home/jaime.barranco@hevs.ch/.ssh}:/ssh-src:ro
     networks:
       - backend
