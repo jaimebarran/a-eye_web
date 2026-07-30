@@ -17,11 +17,9 @@ from utils import (
     clean_email,
     copy_file_to_hpc,
     copy_files_from_hpc,
-    copy_folder,
     modify_jobfile,
     move_file,
     print_and_log,
-    user_reference_rmtree,
 )
 
 # ----------------------------------------------------------------------------------------------
@@ -87,14 +85,12 @@ def getSegmentation(
         raise
 
     copy_files_from_hpc(f"{OUTPUT_HPC}/{safe_email}_{timestamp}", paths.download)
-    # Logs handling
+    # Logs handling: keep only this job's Slurm output. The run's own
+    # app.log/console.log are added later by sync_logs_to_output(); the shared
+    # server log is never copied here as it holds every user's activity.
     output_logs = paths.download / "logs"
-    if output_logs.exists():
-        user_reference_rmtree(output_logs)
     output_logs.mkdir(parents=True, exist_ok=True)
     move_file(str(paths.download / "*.err"), output_logs)
     move_file(str(paths.download / "*.out"), output_logs)
-
-    copy_folder(LOGS_FOLDER, output_logs)
 
     return "\nInference finished!!"

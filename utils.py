@@ -14,6 +14,7 @@ import stat
 import subprocess
 import tempfile
 import zipfile
+from contextvars import ContextVar
 from datetime import datetime
 from functools import wraps
 from os import path
@@ -44,14 +45,13 @@ from user_paths import UserPaths
 # Patterns left out of the user-facing download ZIP. Everything else in the
 # download folder is shipped to the user; filer01 archives it all regardless.
 # The raw upload is excluded because the user already has it locally.
-# app.log/console.log are shared across every request and never cleared, so they
-# would expose other users' IPs, emails and filenames -- the per-run nnUNet
-# job logs (logs/*.err, logs/*.out) are shipped instead.
 NOT_TO_OUTPUT = [
-    "app.log",
-    "console.log",
     "*_raw.nii.gz",
 ]
+
+# Run log of the request being served, set by bind_run_logs()/start_run_logs().
+# Each user gets their own directory, so concurrent runs never share a log file.
+_run_logs_dir: ContextVar[str | None] = ContextVar("run_logs_dir", default=None)
 
 
 # Adapted from (open-webui-graphiti-memory, Skyzi000, accessed 01.06.2026)
@@ -243,6 +243,9 @@ def get_user_paths(user_email: str) -> UserPaths:
         jobfile=Path("./jobfiles") / f"nnunet_inference_{cleaned_email}.sh",
         active_job_file=Path("./static/active_jobs") / f"{cleaned_email}.txt",
         visualisation=base_path / "visualisation",
+        # Kept outside base_path: clean_folders() wipes the download folder
+        # mid-run, which would take the run's own log with it.
+        logs=Path(LOGS_FOLDER) / cleaned_email,
         hpc_base_input=f"{BASE_INPUT_HPC}/{cleaned_email}",
         hpc_input=f"{BASE_INPUT_HPC}/{cleaned_email}/input",
     )
@@ -675,11 +678,6 @@ def start_docker():
         print_and_log("[A-eye] Docker has been started", "info", LOGS_FOLDER)
 
 
-def clear_logs(logs_folder=None):
-    open(f"{logs_folder}/app.log", "w").close()
-    open(f"{logs_folder}/console.log", "w").close()
-
-
 def prepare_log_target(target):
     os.makedirs(target, exist_ok=True)
 
@@ -697,9 +695,45 @@ def prepare_log_target(target):
                 pass
 
 
+def bind_run_logs(paths: UserPaths) -> None:
+    """Direct this request's log lines at the caller's own run log as well.
+
+    Args:
+        paths (UserPaths): the current user's paths, providing paths.logs
+    """
+    prepare_log_target(str(paths.logs))
+    _run_logs_dir.set(str(paths.logs))
+
+
+def start_run_logs(paths: UserPaths) -> None:
+    """Begin a fresh run log for the caller, discarding the previous run's lines.
+
+    Args:
+        paths (UserPaths): the current user's paths, providing paths.logs
+    """
+    bind_run_logs(paths)
+    for filename in ("app.log", "console.log"):
+        open(os.path.join(str(paths.logs), filename), "w").close()
+
+
 def get_log_targets(logs_folder=None):
-    prepare_log_target(logs_folder)
-    return [logs_folder]
+    """Log targets for the current call: the shared server log, plus the
+    caller's own run log when a request has bound one.
+
+    The shared log stays first so callers keep raising on its failures.
+    """
+    targets = [logs_folder]
+
+    run_logs = _run_logs_dir.get()
+    if run_logs is not None and os.path.abspath(run_logs) != os.path.abspath(
+        str(logs_folder)
+    ):
+        targets.append(run_logs)
+
+    for target in targets:
+        prepare_log_target(target)
+
+    return targets
 
 
 def append_log_line(path, line):
@@ -708,16 +742,23 @@ def append_log_line(path, line):
 
 
 def sync_logs_to_output(output_folder: str | Path) -> None:
-    """Copy the current app and console logs a subfolder of the output folder
+    """Copy this run's app and console logs to a subfolder of the output folder
+
+    Only the caller's own run log is copied, never the shared server log, so a
+    user's download can never carry another user's activity.
 
     Args:
         output_folder (str | Path): path were the logs subfolder will be made
     """
+    run_logs = _run_logs_dir.get()
+    if run_logs is None:
+        return
+
     output_logs = os.path.join(output_folder, "logs")
     prepare_log_target(output_logs)
 
     for filename in ("app.log", "console.log"):
-        source = os.path.join(LOGS_FOLDER, filename)
+        source = os.path.join(run_logs, filename)
         destination = os.path.join(output_logs, filename)
         if os.path.exists(source):
             try:

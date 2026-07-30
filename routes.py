@@ -1,6 +1,7 @@
 """Flask routes for the A-eye web platform.
 """
 
+import contextvars
 import csv
 import math
 import os
@@ -62,6 +63,7 @@ from user_paths import UserPaths
 from utils import (
     Message,
     allowed_file,
+    bind_run_logs,
     cancel_slurm_job,
     clean_folder_hpc,
     clean_folders,
@@ -78,6 +80,7 @@ from utils import (
     print_and_log,
     requires_auth,
     requires_auth_api,
+    start_run_logs,
     sync_logs_to_output,
     upload_files,
     zip_folder,
@@ -350,7 +353,9 @@ def faq():
 def segmentation():
     if "user" in session:
         user_email: str = session.get("user", {}).get("email", "unknown_user")
-        _cancel_job(get_user_paths(user_email))
+        paths: UserPaths = get_user_paths(user_email)
+        bind_run_logs(paths)
+        _cancel_job(paths)
         return render_template("segmentation.html")
     return redirect(url_for("routes.login"))
 
@@ -369,6 +374,8 @@ def upload_file() -> tuple[Response, int]:
     """
     user_email: str = session.get("user", {}).get("email", "unknown_user")
     paths: UserPaths = get_user_paths(user_email)
+    # An upload starts a new run, so the previous run's log is discarded here
+    start_run_logs(paths)
 
     _cancel_job(paths)
 
@@ -444,6 +451,7 @@ def segment() -> tuple[Response, int]:
     """
     user_email: str = session.get("user", {}).get("email", "unknown_user")
     paths: UserPaths = get_user_paths(user_email)
+    bind_run_logs(paths)
 
     _cancel_job(paths)
 
@@ -517,9 +525,11 @@ def segment() -> tuple[Response, int]:
     # 3. Start background thread to copy files
     increment_cases_processed()
     # send_email(user_email, "A-eye segmentation task completed successfully. You can download the results.")
+    # Threads do not inherit context, so carry the run log binding across
+    # explicitly or the archiving thread would log to the shared file only.
     threading.Thread(
-        target=copy_segmentation_data,
-        args=(user_email, paths.download),
+        target=contextvars.copy_context().run,
+        args=(copy_segmentation_data, user_email, paths.download),
     ).start()
 
     # 4. add result file and metadata
@@ -654,6 +664,7 @@ def extract_biomarkers() -> tuple[Response, int]:
     """
     user_email: str = session.get("user", {}).get("email", "unknown_user")
     paths: UserPaths = get_user_paths(user_email)
+    bind_run_logs(paths)
     # get the body of the POST request made
     body = request.get_json(force=True) or {}
     case_names: list[str] = body.get("case_names", [])
@@ -720,6 +731,7 @@ def reset_session() -> tuple[Response, int]:
     """
     user_email: str = session.get("user", {}).get("email", "unknown_user")
     paths: UserPaths = get_user_paths(user_email)
+    bind_run_logs(paths)
 
     _cancel_job(paths)
 

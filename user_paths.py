@@ -21,6 +21,7 @@ class UserPaths:
         jobfile:         Local path to the generated Bash script for job submission
         active_job_file: Local file storing the running Slurm job ID
         visualisation:   Local path to store visualisations generated, to be display on the plateform
+        logs:            Local directory holding this run's own app.log/console.log
         hpc_base_input:  Root directory on the HPC cluster for this user's input data
         hpc_input:       Subdirectory of hpc_base_input where input files are placed for inference
     """
@@ -33,6 +34,7 @@ class UserPaths:
     jobfile: Path
     active_job_file: Path
     visualisation: Path
+    logs: Path
     hpc_base_input: str
     hpc_input: str
 
@@ -43,3 +45,4 @@ class UserPaths:
         self.download.mkdir(parents=True, exist_ok=True)
         self.jobfile.parent.mkdir(parents=True, exist_ok=True)
         self.visualisation.mkdir(parents=True, exist_ok=True)
+        self.logs.mkdir(parents=True, exist_ok=True)
