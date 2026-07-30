@@ -41,12 +41,15 @@ from config import (
 )
 from user_paths import UserPaths
 
+# Patterns left out of the user-facing download ZIP. Everything else in the
+# download folder is shipped to the user; filer01 archives it all regardless.
+# The raw upload is excluded because the user already has it locally.
+# app.log/console.log are shared across every request and never cleared, so they
+# would expose other users' IPs, emails and filenames -- the per-run nnUNet
+# job logs (logs/*.err, logs/*.out) are shipped instead.
 NOT_TO_OUTPUT = [
-    "logs",
-    "plans.pkl",
-    "postprocessing.json",
-    "prediction_time.txt",
-    "*_cropped.nii.gz",
+    "app.log",
+    "console.log",
     "*_raw.nii.gz",
 ]
 
