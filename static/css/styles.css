@@ -28,6 +28,11 @@
     /* FAQ */
     --faq-odd-bg: #ddeaf7;
     --faq-even-bg: #ffffff;
+    /* Section bands need their own colour: --faq-even-bg equals --bg-color, so
+       a heading on the page background would blend into the row beneath it. */
+    --faq-section-bg: #0B79C2;
+    --faq-section-text: #ffffff;
+    --faq-toc-bg: #f4f8fc;
 
     /* Buttons */
     --btn-secondary-bg: #6c757d;
@@ -81,6 +86,9 @@
     /* FAQ */
     --faq-odd-bg: #1a2e42;
     --faq-even-bg: #1a1a1a;
+    --faq-section-bg: #0e4a70;
+    --faq-section-text: #ffffff;
+    --faq-toc-bg: #21242b;
 
     /* Buttons */
     --btn-secondary-bg: #555555;
@@ -701,14 +709,93 @@ a:hover {
     transition: background-color 0.2s ease;
 }
 
-/* nth-of-type, not nth-child: the section headings between the rows are
-   siblings too, and counting them would break the alternation. */
+/* Rows are counted inside their own .faq-section, so every section starts on
+   the same colour and the rhythm is identical throughout the page. */
 .faq-item:nth-of-type(odd) {
     background-color: var(--faq-odd-bg);
 }
 
 .faq-item:nth-of-type(even) {
     background-color: var(--faq-even-bg);
+}
+
+/* ------------------------------------------------------------
+   FAQ — section bands
+   ------------------------------------------------------------ */
+
+.faq-section {
+    scroll-margin-top: 100px;
+}
+
+/* Full-bleed like the rows, in a colour used by neither of them, so a heading
+   can never read as part of the row below it. */
+.faq-section-title {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-bottom: 0;
+    padding: 18px 50px;
+    box-sizing: border-box;
+    background-color: var(--faq-section-bg);
+    color: var(--faq-section-text);
+    font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.faq-section-title .faq-section-inner {
+    display: block;
+    max-width: 1125px;
+    margin: 0 auto;
+}
+
+/* ------------------------------------------------------------
+   FAQ — index
+   ------------------------------------------------------------ */
+
+.faq-toc {
+    background-color: var(--faq-toc-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 0 auto 10px;
+    max-width: 1125px;
+}
+
+.faq-toc-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted-text);
+    margin: 0 0 12px;
+}
+
+.faq-toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 8px 24px;
+}
+
+.faq-toc-list a {
+    display: block;
+    padding: 4px 0;
+    color: var(--link-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.faq-toc-list a:hover,
+.faq-toc-list a:focus {
+    text-decoration: underline;
+}
+
+.faq-toc-count {
+    color: var(--muted-text);
+    font-weight: 400;
 }
 
 .faq-item .faq-content {
@@ -1433,6 +1520,14 @@ details[open] .summary-chevron {
     /* FAQ padding */
     .faq-item {
         padding: 30px 20px;
+    }
+
+    .faq-section-title {
+        padding: 14px 20px;
+    }
+
+    .faq-toc {
+        padding: 16px 18px;
     }
 }
 

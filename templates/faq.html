@@ -8,7 +8,20 @@
 </div>
 <div class="container">
 
-    <h4 class="mt-4 mb-3">Account and access</h4>
+    <nav class="faq-toc" aria-label="FAQ index">
+        <p class="faq-toc-title">Jump to a section</p>
+        <ul class="faq-toc-list">
+            <li><a href="#faq-account">Account and access <span class="faq-toc-count">(3)</span></a></li>
+            <li><a href="#faq-uploading">Uploading data <span class="faq-toc-count">(3)</span></a></li>
+            <li><a href="#faq-running">Running a segmentation <span class="faq-toc-count">(4)</span></a></li>
+            <li><a href="#faq-results">Results <span class="faq-toc-count">(4)</span></a></li>
+            <li><a href="#faq-privacy">Data and privacy <span class="faq-toc-count">(2)</span></a></li>
+            <li><a href="#faq-support">Support <span class="faq-toc-count">(1)</span></a></li>
+        </ul>
+    </nav>
+
+    <section class="faq-section" id="faq-account">
+    <h3 class="faq-section-title"><span class="faq-section-inner">Account and access</span></h3>
 
     <div class="faq-item">
         <div class="faq-content">
@@ -29,7 +42,10 @@
         </div>
     </div>
 
-    <h4 class="mt-4 mb-3">Uploading data</h4>
+    </section>
+
+    <section class="faq-section" id="faq-uploading">
+    <h3 class="faq-section-title"><span class="faq-section-inner">Uploading data</span></h3>
 
     <div class="faq-item">
         <div class="faq-content">
@@ -55,7 +71,10 @@ dicom2nifti.convert_directory("dicom_folder", "output_folder", compression=True)
         </div>
     </div>
 
-    <h4 class="mt-4 mb-3">Running a segmentation</h4>
+    </section>
+
+    <section class="faq-section" id="faq-running">
+    <h3 class="faq-section-title"><span class="faq-section-inner">Running a segmentation</span></h3>
 
     <div class="faq-item">
         <div class="faq-content">
@@ -83,7 +102,10 @@ dicom2nifti.convert_directory("dicom_folder", "output_folder", compression=True)
         </div>
     </div>
 
-    <h4 class="mt-4 mb-3">Results</h4>
+    </section>
+
+    <section class="faq-section" id="faq-results">
+    <h3 class="faq-section-title"><span class="faq-section-inner">Results</span></h3>
 
     <div class="faq-item">
         <div class="faq-content">
@@ -118,7 +140,10 @@ dicom2nifti.convert_directory("dicom_folder", "output_folder", compression=True)
         </div>
     </div>
 
-    <h4 class="mt-4 mb-3">Data and privacy</h4>
+    </section>
+
+    <section class="faq-section" id="faq-privacy">
+    <h3 class="faq-section-title"><span class="faq-section-inner">Data and privacy</span></h3>
 
     <div class="faq-item">
         <div class="faq-content">
@@ -133,7 +158,10 @@ dicom2nifti.convert_directory("dicom_folder", "output_folder", compression=True)
         </div>
     </div>
 
-    <h4 class="mt-4 mb-3">Support</h4>
+    </section>
+
+    <section class="faq-section" id="faq-support">
+    <h3 class="faq-section-title"><span class="faq-section-inner">Support</span></h3>
 
     <div class="faq-item">
         <div class="faq-content">
@@ -141,5 +169,6 @@ dicom2nifti.convert_directory("dicom_folder", "output_folder", compression=True)
             <p>Please write to <a href="mailto:jaime.barrancohernandez@hevs.ch">jaime.barrancohernandez@hevs.ch</a>. Including the <code>logs/</code> folder from your results archive helps considerably, as it records exactly what happened during your run.</p>
         </div>
     </div>
+    </section>
 </div>
 {% endblock %}
