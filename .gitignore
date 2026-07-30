@@ -134,8 +134,16 @@ dmypy.json
 # Others
 # Ignore everything under static/ except the images directory and its contents
 static/*
+!static/js/
 !static/images/
 !static/images/**
+!static/css/
+!static/css/**
+!static/LICENSE.txt
+
+
+
+
 nnUNet/
 nnUNetv2/
 *.err
@@ -145,3 +153,13 @@ filer01/
 .codex/
 local-certs/
 .codex
+
+pyproject.toml
+uv.lock
+
+# Test input data
+data/simple-sample/*
+data/test-webplatform/*
+
+# example of results
+data/seg-results

@@ -4,32 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}A-eye web platform{% endblock %}</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/A-eye_logo_square_wobg.ico') }}">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('theme');
+            if (saved) {
+                document.documentElement.setAttribute('data-theme', saved);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg fixed-top custom-header">
+    <nav class="navbar navbar-expand-lg d-flex fixed-top custom-header">
         <div class="container d-flex justify-content-between align-items-center">
             <!-- Logo -->
-            <div class="logo_container d-flex align-items-center">
-                <a class="navbar-brand" href="{{ url_for('routes.welcome') }}">
-                    <img src="https://fondation-gelbert.ch/wp-content/uploads/2019/08/logo-entete.png"
-                        alt="Fondation Gelbert Logo"
-                        class="gelbert-logo">
-                </a>
+            <div class="logo_container d-flex align-items-center gap-2">
+                <img src="{{ url_for('static', filename='images/A-eye_logo_square-no-bg.png') }}"
+                    alt="A-Eye"
+                    class="aeye-nav-logo">
+                <div class="nav-logo-divider"></div>
+                <img src="{{ url_for('static', filename='images/Logo-CIBM_web-no-bg.png') }}"
+                    alt="CIBM Logo"
+                    class="partner-nav-logo">
+                <img src="{{ url_for('static', filename='images/logo_hesso.png') }}"
+                    alt="HES-SO School of Engineering Logo"
+                    class="partner-nav-logo">
             </div>
 
             <!-- Navbar toggler (for mobile) -->
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="true" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <!-- Menu Items -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == url_for('routes.welcome') %}active{% endif %}" href="{{ url_for('routes.welcome') }}">Home</a>
                     </li>
@@ -51,15 +66,34 @@
                     {% else %}
                         <li class="nav-item"><a class="nav-link login" href="{{ url_for('routes.login') }}">Login</a></li>
                     {% endif %}
+                    <li class="nav-item d-flex align-items-center">
+                        <button id="dark-mode-toggle" class="dark-mode-toggle" title="Toggle dark mode">
+                            <i id="dark-mode-icon" class="fas fa-moon"></i>
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
-    <div class="container">
+    <div class="{% block body_container %}container{% endblock %}">
         {% block content %}{% endblock %}
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            var icon = document.getElementById('dark-mode-icon');
+            if (document.documentElement.getAttribute('data-theme') === 'dark') {
+                icon.className = 'fas fa-sun';
+            }
+        })();
+        document.getElementById('dark-mode-toggle').addEventListener('click', function() {
+            var html = document.documentElement;
+            var isDark = html.getAttribute('data-theme') === 'dark';
+            var next = isDark ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            document.getElementById('dark-mode-icon').className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+        });
+    </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 # Base image
-FROM python:3.10
+FROM python:3.13
 
 # Set working directory
 WORKDIR /app
@@ -14,11 +14,17 @@ RUN apt-get update && apt-get install -y docker.io \
 
 RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
 
-# Copy the rest of the application
-COPY . .
+# optimise build time by enhance caching usage
+COPY static/ ./static/
+COPY templates/ ./templates/
+COPY jobfiles/ ./jobfiles/
+
+COPY package/ ./package/
+COPY *.py .
+COPY LICENSE.txt .
 
 # Set environment variables
-ENV FLASK_DEBUG=1
+ENV FLASK_DEBUG=0
 
 # Expose port
 EXPOSE 5000

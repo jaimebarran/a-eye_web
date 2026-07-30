@@ -1,12 +1,228 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome{% endblock %}
+{% block title %}A-Eye — Automated Eye MRI Segmentation{% endblock %}
+
+{% block body_container %}p-0{% endblock %}
 
 {% block content %}
-<div class="animated-background"></div>
-<div class="welcome-container">
-    <img src="{{ url_for('static', filename='images/A-eye_logo_square.png') }}" alt="A-Eye Logo">
-    <h1>A-Eye Web Platform</h1>
-    <p>Automated 3D MRI Segmentation of Human Eye Structures</p>
-</div>
+<!-- Hero -->
+<section class="welcome-hero">
+    <div class="welcome-hero-inner">
+        <img src="{{ url_for('static', filename='images/A-eye_logo_square-no-bg.png') }}" alt="A-Eye Logo" class="welcome-logo">
+        <h1 class="welcome-title">A-Eye Web Platform</h1>
+        <p class="welcome-tagline">Automated 3D MRI Segmentation of Human Eye Structures</p>
+        <p class="welcome-description">
+            Upload a human T1-weighted orbital MRI and receive fully-automated segmentation masks for
+            <strong>9 structures</strong> of the eye, together with quantitative biomarkers —
+            axial length and volumetry — delivered as a ready-to-use <code>.zip</code> archive.
+        </p>
+        <div class="welcome-cta-row">
+            <a href="{{ url_for('routes.segmentation') }}" class="welcome-btn-primary">
+                <i class="fa-solid fa-eye"></i> Start Segmentation
+            </a>
+            <div class="dropdown welcome-license-dropdown">
+                <button class="welcome-btn-secondary dropdown-toggle" type="button" id="welcomeLicenseDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-file-contract"></i> License
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="welcomeLicenseDropdown">
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('routes.serve_license') }}" target="_blank" rel="noopener">
+                            <i class="fa-solid fa-eye"></i> View license
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('routes.serve_license') }}" download>
+                            <i class="fa-solid fa-download"></i> Download license (.txt)
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="dropdown welcome-downloads-dropdown">
+                <button class="welcome-btn-secondary dropdown-toggle" type="button" id="welcomeDownloadsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-download"></i> Downloads
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="welcomeDownloadsDropdown">
+                    <li>
+                        <a class="dropdown-item" href="https://doi.org/10.5281/zenodo.13325369" target="_blank" rel="noopener">
+                            <i class="fa-solid fa-database"></i> Eye atlases &amp; model weights (Zenodo)
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="https://hub.docker.com/r/jaimebarran/fw_gear_aeye" target="_blank" rel="noopener">
+                            <i class="fa-brands fa-docker"></i> Docker image (Docker Hub)
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="https://github.com/jaimebarran/a-eye" target="_blank" rel="noopener">
+                            <i class="fa-brands fa-github"></i> Source code (GitHub)
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0352257&amp;type=printable" target="_blank" rel="noopener">
+                            <i class="fa-solid fa-file-pdf"></i> Paper (PDF)
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <a href="{{ url_for('routes.faq') }}" class="welcome-btn-secondary">
+                <i class="fa-solid fa-circle-question"></i> FAQ
+            </a>
+            <a href="#cite-this-work" class="welcome-btn-secondary">
+                <i class="fa-solid fa-quote-left"></i> Cite this work
+            </a>
+            <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0352257" target="_blank" rel="noopener" class="welcome-btn-secondary">
+                <i class="fa-solid fa-file-lines"></i> Read the paper
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Stats bar -->
+<section class="welcome-stats-bar">
+    <div class="welcome-stats-inner">
+        <div class="welcome-stat">
+            <span class="welcome-stat-value">{{ cases_processed }}</span>
+            <span class="welcome-stat-label">MRI cases processed</span>
+        </div>
+        <div class="welcome-stat-divider"></div>
+        <div class="welcome-stat">
+            <span class="welcome-stat-value">9</span>
+            <span class="welcome-stat-label">eye structures segmented</span>
+        </div>
+        <div class="welcome-stat-divider"></div>
+        <div class="welcome-stat">
+            <span class="welcome-stat-value">1,245</span>
+            <span class="welcome-stat-label">subjects in training cohort</span>
+        </div>
+    </div>
+</section>
+
+<!-- What it segments -->
+<section class="welcome-section welcome-section-light">
+    <div class="welcome-section-inner">
+        <h2 class="welcome-section-title">What does A-Eye segment?</h2>
+        <p class="welcome-section-lead">
+            The pipeline is based on nnU-Net and was trained on a large-scale, multi-centre cohort of
+            healthy adult subjects. It provides segmentation masks and quantitative biomarkers for the following structures:
+        </p>
+        <div class="welcome-structures-grid">
+            {% set structures = [
+                ('1.png', 'Lens',             'The crystalline lens'),
+                ('2.png', 'Globe',            'The full eyeball volume'),
+                ('3.png', 'Optic Nerve',      'The optic nerve trunk'),
+                ('4.png', 'Intraconal Fat',   'Fat inside the muscle cone'),
+                ('5.png', 'Extraconal Fat',   'Fat outside the muscle cone'),
+                ('6.png', 'Lateral Rectus',   'Lateral rectus muscle'),
+                ('7.png', 'Medial Rectus',    'Medial rectus muscle'),
+                ('8.png', 'Inferior Rectus',  'Inferior rectus muscle'),
+                ('9.png', 'Superior Rectus',  'Superior rectus muscle'),
+            ] %}
+            {% for img, name, desc in structures %}
+            <div class="welcome-structure-card">
+                <img src="{{ url_for('static', filename='images/eye_structures/' ~ img) }}"
+                     alt="{{ name }}"
+                     class="welcome-structure-img">
+                <span class="welcome-structure-name">{{ name }}</span>
+                <span class="welcome-structure-desc">{{ desc }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Pipeline -->
+<section class="welcome-section welcome-section-dark">
+    <div class="welcome-section-inner">
+        <h2 class="welcome-section-title welcome-section-title-light">Pipeline Overview</h2>
+        <p class="welcome-section-lead welcome-section-lead-light">
+            A-Eye uses nnU-Net, a self-configuring deep-learning framework for biomedical image segmentation.
+            The model was validated on 1,245 healthy adult subjects and achieves state-of-the-art performance
+            across all nine orbital structures.
+        </p>
+        <img src="{{ url_for('static', filename='images/pipeline_unet.png') }}"
+             alt="nnU-Net pipeline overview"
+             class="welcome-pipeline-img">
+    </div>
+</section>
+
+<!-- Accepted formats -->
+<section class="welcome-section welcome-section-light">
+    <div class="welcome-section-inner welcome-formats-grid">
+        <div class="welcome-format-block">
+            <h3 class="welcome-format-title"><i class="fa-solid fa-file-medical"></i> Accepted input formats</h3>
+            <ul class="welcome-format-list">
+                <li><code>.nii</code> — NIfTI image</li>
+                <li><code>.nii.gz</code> — compressed NIfTI</li>
+                <li><code>.zip</code> / <code>.7z</code> — archive of NIfTI or DICOM files</li>
+                <li><code>.dcm</code> — DICOM (inside an archive)</li>
+            </ul>
+            <p class="welcome-format-note">T1-weighted sequences only. Up to 5 cases per submission.</p>
+        </div>
+        <div class="welcome-format-block">
+            <h3 class="welcome-format-title"><i class="fa-solid fa-file-zipper"></i> What you get back</h3>
+            <ul class="welcome-format-list">
+                <li>Per-eye masks — left, right, merged (<code>.nii.gz</code>)</li>
+                <li>Axial length visualisations (<code>.png</code>)</li>
+                <li>Biomarkers summary table (<code>biomarkers.csv</code>)</li>
+            </ul>
+            <p class="welcome-format-note">All results packaged in a single <code>.zip</code> download, together with the <a href="{{ url_for('routes.serve_license') }}" download>license agreement</a>.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Citation -->
+<section id="cite-this-work" class="welcome-section welcome-section-dark">
+    <div class="welcome-section-inner">
+        <h2 class="welcome-section-title welcome-section-title-light"><i class="fa-solid fa-quote-left"></i> Cite this work</h2>
+        <p class="welcome-section-lead welcome-section-lead-light">
+            If A-Eye contributes to your research, please cite the associated publication and dataset:
+        </p>
+        <blockquote class="welcome-citation">
+            Jaime Barranco, Adrian Luyken, Hamza Kebiri, Philipp Stachs, Pedro M. Gordaliza, Oscar Esteban,
+            Yasser Aleman, Raphael Sznitman, Oliver Stachs, Sönke Langner, Benedetta Franceschiello, Meritxell Bach Cuadra.
+            A-eye: Automated 3D MRI Segmentation and Morphometric Feature Extraction for Eye and Orbit Atlas Construction.
+            <em>PLOS ONE</em>.
+            <a href="https://doi.org/10.1371/journal.pone.0352257" target="_blank" rel="noopener">https://doi.org/10.1371/journal.pone.0352257</a>
+        </blockquote>
+        <blockquote class="welcome-citation">
+            Barranco J, Luyken A, Stachs P, Esteban O, Aleman-Gomez Y, Stachs O, et al. MR-Eye atlas: a large-scale
+            atlas of the eye based on T1-weighted MR imaging [dataset]. Zenodo; 2024.
+            <a href="https://doi.org/10.5281/zenodo.13325369" target="_blank" rel="noopener">https://doi.org/10.5281/zenodo.13325369</a>
+        </blockquote>
+        <div class="welcome-cta-row">
+            <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0352257" target="_blank" rel="noopener" class="welcome-btn-secondary">
+                <i class="fa-solid fa-file-lines"></i> Read the paper
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Resources &amp; downloads -->
+<section class="welcome-section welcome-section-light">
+    <div class="welcome-section-inner">
+        <h2 class="welcome-section-title">Resources &amp; downloads</h2>
+        <p class="welcome-section-lead">
+            All code, eye atlases, and pretrained model weights behind A-eye are openly available.
+        </p>
+        <div class="welcome-resources-grid">
+            <a class="welcome-resource-card" href="https://github.com/jaimebarran/a-eye" target="_blank" rel="noopener">
+                <i class="fa-brands fa-github"></i>
+                <span class="welcome-resource-title">GitHub</span>
+                <span class="welcome-resource-desc">
+                    Source code of the A-Eye pipeline and web platform and the Docker image with
+                    nnU-Net and the pretrained model weights already installed, for plug-and-play segmentation.
+                </span>
+            </a>
+            <a class="welcome-resource-card" href="https://doi.org/10.5281/zenodo.13325369" target="_blank" rel="noopener">
+                <i class="fa-solid fa-database"></i>
+                <span class="welcome-resource-title">Zenodo</span>
+                <span class="welcome-resource-desc">
+                    Eye atlases — male (594), female (616) and combined (1,210) subjects — with their
+                    majority-voting segmentations, the manual segmentation of the combined atlas,
+                    the pretrained model weights, and a reference to the Docker image.
+                </span>
+            </a>
+        </div>
+    </div>
+</section>
 {% endblock %}

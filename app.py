@@ -1,25 +1,28 @@
 import logging
+
+from authlib.integrations.flask_client import OAuth
 from flask import Flask
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
-from authlib.integrations.flask_client import OAuth
-from config import Config, LOGS_FOLDER
+
+from config import LOGS_FOLDER, Config
 
 mail = Mail()
 oauth = OAuth()
+
 
 def create_app():
     app = Flask(__name__, static_folder="static")
     app.config.from_object(Config)
 
-    app.secret_key = app.config['SECRET_KEY']
+    app.secret_key = app.config["SECRET_KEY"]
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     # Setup logging
     logging.basicConfig(
         filename=f"{LOGS_FOLDER}/app.log",
         level=logging.DEBUG,
-        format="%(asctime)s %(levelname)s %(name)s %(message)s"
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
 
     mail.init_app(app)
@@ -37,6 +40,7 @@ def create_app():
     )
 
     from routes import bp as routes_bp
+
     app.register_blueprint(routes_bp)
 
     return app

@@ -2,190 +2,307 @@
 
 {% block title %}Segmentation - AEye{% endblock %}
 
-{% block content %}
-<div class="container" style="margin-top: 50px;">
-    <h2 class="main-title text-center">Segmentation Tool</h2>
+{% block body_container %}container-fluid px-3{% endblock %}
 
-    <div class="row text-center" style="margin-top: 30px;">
-        <div class="col-md-3">
-            <form id="choose-file-form">
-                <input type="file" id="file-input" style="display: none;" multiple onchange="displaySelectedFiles()">
-                <button type="button" class="btn btn-success btn-lg btn-block" id="choose-file-button" onclick="document.getElementById('file-input').click();">
-                    <i class="fas fa-mouse-pointer"></i> Choose File(s)
+{% block content %}
+<div class="container-wide">
+    <div class="text-center">
+        <h2 class="main-title mt-5 fw-bold">
+            Segmentation Tool
+        </h2>
+        <hr class="mx-auto mt-2 mb-0" style="width: 7rem; border-top: 2px solid var(--link-color); opacity: 1;">
+    </div>
+
+    <details class="mt-4" open>
+        <summary style="cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 4px; color: var(--link-color); font-weight: 600;">
+            <i class="fa-solid fa-chevron-right summary-chevron"></i>
+            About the segmentation tool
+        </summary>
+        <div class="mt-3">
+            <div class="alert alert-success" role="alert">
+                <p class="card-text mb-0">
+                    This is an automated pipeline for 3D segmentation of orbital structures from MRI,
+                    developed and validated on a large-scale cohort of 1,245 healthy adult subjects.
+                    <br><br>It segments nine structures of the eye (<strong>lens, globe, optic nerve, intraconal fat, extraconal fat,
+                    lateral rectus muscle, medial rectus muscle, inferior rectus muscle, superior rectus muscle</strong>)
+                    and extracts quantitative biomarkers:
+                    <strong>axial length</strong> (mm) and <strong>volumetry</strong> (mm³) per structure.
+                    <br><br>Results are provided in a <code>.zip</code> archive containing:
+                    <ul class="mt-1 mb-0">
+                        <li>the original input image (<code>_raw.nii.gz</code>)</li>
+                        <li>per-eye segmentation masks — left, right, and merged (<code>.nii.gz</code>)</li>
+                        <li><em>if biomarkers are extracted:</em> axial length visualisations (<code>.png</code>) and a summary table (<code>biomarkers.csv</code>)</li>
+                    </ul>
+                </p>
+                <p class="mt-1 mb-0 text-muted">
+                Reference: <em><a href="https://doi.org/10.1371/journal.pone.0352257">A-eye paper </a></em>
+                </p>
+            </div>
+
+            <div class="alert alert-warning mb-3" role="alert">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <i class="fa-solid fa-triangle-exclamation fa-fw flex-shrink-0"></i>
+                    <strong>Important</strong>
+                </div>
+                <ul class="mb-0">
+                    <li><strong>Human T1-weighted images only.</strong></li>
+                    <li><strong>Accepted formats</strong>
+                        <ul>
+                            <li>Files for selection: <code>.nii</code> &middot; <code>.nii.gz</code> &middot; <code>.zip</code> &middot; <code>.7z</code></li>
+                            <li>Images handled: <code>.nii</code> &middot; <code>.dcm</code></li>
+                        </ul>
+                    </li>
+                    <li>Limited to 10 cases per use.</li>
+                    <li>Biomarkers extraction is optional. If used, the results are added to the files to download.</li>
+                </ul>
+            </div>
+
+            <a href="/faq" class="btn btn-outline-secondary btn-sm">For more information or questions: FAQ page</a>
+        </div>
+    </details>
+
+    <div class="consent-box mb-3 mt-4">
+        <p class="mb-2">To upload your data and use the pipeline, please confirm the following:</p>
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="consent-authorization-checkbox" onchange="updateUploadButtonState()">
+            <label class="form-check-label" for="consent-authorization-checkbox">
+                By uploading data, you confirm that you are authorized to do so and that the upload complies with the ethics approval and Data Transfer Agreements (DTAs) governing your data. You remain solely responsible for ensuring this compliance.
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="consent-storage-checkbox" onchange="updateUploadButtonState()">
+            <label class="form-check-label" for="consent-storage-checkbox">
+                Uploaded images are processed and stored only temporarily to generate and display your segmentation results. Once processing is complete, the original images are not retained on our servers.
+            </label>
+        </div>
+    </div>
+
+    <!-- buttons -->
+    <div class="row text-center mt-4">
+        <div class="col">
+            <form id="select-file-form">
+                <input type="file" id="file-input" style="display: none;" multiple onchange="onSelectionFilter()">
+                <button type="button" class="btn btn-success btn-lg btn-block" id="select-file-button"
+                    onclick="document.getElementById('file-input').click();">
+                    <i class="fa-solid fa-mouse-pointer"></i> Select
                 </button>
+                 <small class="text-muted d-block mt-2">1. Select cases to process</small>
             </form>
         </div>
-        <div class="col-md-3">
+        <div class="col">
             <form id="upload-form" method="post" enctype="multipart/form-data">
-                <button type="button" class="btn btn-secondary btn-lg btn-block" id="upload-button" onclick="uploadFiles()" disabled>
-                    <i class="fas fa-upload"></i> Upload
+                <button type="button" class="btn btn-secondary btn-lg btn-block" id="upload-button"
+                    onclick="uploadFiles()" disabled>
+                    <i class="fa-solid fa-upload"></i> Upload
                 </button>
+                <small class="text-muted d-block mt-2">2. Upload to server</small>
             </form>
         </div>
-        <div class="col-md-3">
+        <div class="col">
             <form id="segment-form" method="post">
-                <button type="button" class="btn btn-secondary btn-lg btn-block" id="segment-button" onclick="segmentFiles()" disabled>
-                    <i class="fas fa-cogs"></i> Segment
+                <button type="button" class="btn btn-secondary btn-lg btn-block" id="segment-button"
+                    onclick="segmentFiles()" disabled>
+                    <i class="fa-solid fa-scissors"></i> Segment
                 </button>
+                <small class="text-muted d-block mt-2">3. Run segmentation</small>
             </form>
         </div>
-        <div class="col-md-3">
+        <div class="col">
+            <form id="biomarkers-form">
+                <button type="button" class="btn btn-secondary btn-lg btn-block" id="biomarkers-button"
+                    onclick="extractBiomarkers()" disabled>
+                    <i class="fa-solid fa-gear"></i> Extract
+                </button>
+                <small class="text-muted d-block mt-2">4. Extract biomarkers</small>
+            </form>
+        </div>
+        <div class="col">
             <form id="download-form" method="get" action="/download">
                 <button type="button" id="download-button" class="btn btn-secondary btn-lg btn-block" disabled>
-                    <i class="fas fa-download"></i> Download
+                    <i class="fa-solid fa-download"></i> Download
                 </button>
+                <small class="text-muted d-block mt-2">5. Download results</small>
             </form>
         </div>
-    </div>
-
-    <div class="row text-center" style="margin-top: 30px;">
-        <div class="col-md-12">
-            <div id="processing-spinner" class="text-center mt-3" style="display: none;">
-                <div class="spinner-border" role="status" style="border-color: green; border-right-color: transparent;">
-                </div>
-                <div class="mt-2">Processing segmentation…</div>
-            </div>
-        </div>
-    </div>
-    <!-- Consent notice -->
-    <p class="text-muted text-center mt-4" style="max-width: 800px; margin: 0 auto;">
-        By proceeding, I authorize the A-eye team to store my image data in a secure, non-public database to help improve A-eye's performance.
-    </p>
-
-    <div class="row text-center" style="margin-top: 30px;">
-        <div class="col-md-12">
-            <ul id="file-list" class="list-group"></ul>
+        <div class="col">
+            <button type="button" class="btn btn-info btn-lg btn-block" id="reset-button" onclick="resetSession()">
+                <i class="fa-solid fa-arrow-rotate-right"></i> Reset
+            </button>
+            <small class="text-muted d-block mt-2">Reset the process</small>
         </div>
     </div>
 </div>
 
-<script>
-    function displaySelectedFiles() {
-        var fileList = document.getElementById('file-list');
-        var files = document.getElementById('file-input').files;
-        fileList.innerHTML = ''; // Clear the list
+<div class="container-wide">
+    <!-- rejection notice -->
+    <div class="row text-center" style="margin-top: 30px;">
+        <div class="col-md-12">
+            <div id="rejection-tooltip" class="alert alert-danger fw-bold mb-3" style="display:none;"></div>
+            <h5 id="selected-files-title" class="text-center mb-3" style="display:none;">selected file(s)</h5>
+            <ul id="file-list" class="list-group"></ul>
+        </div>
+    </div>
 
-        var acceptedFiles = [];
-        var rejectedFiles = [];
-        var allowedExtensions = ['gz', 'zip', '7z', 'nii']; // Adjust based on backend rules
+    <!-- progress bar -->
+    <div class="row text-center" id="status-section" style="display:none; margin-top: 30px;">
+        <div class="col-md-12">
+            <div class="progress mb-3">
+                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                    role="progressbar" style="width: 100%;"></div>
+            </div>
+            <ul id="display-file-list" class="list-group"></ul>
+        </div>
+    </div>
 
-        for (var i = 0; i < files.length; i++) {
-            var listItem = document.createElement('li');
-            listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-            listItem.textContent = files[i].name;
+</div>
 
-            var fileExtension = files[i].name.split('.').pop().toLowerCase();
-            if (allowedExtensions.includes(fileExtension)) {
-                listItem.style.color = 'green'; // ✅ Accepted (green)
-                listItem.innerHTML += ' <span class="badge bg-success">Accepted ✅</span>';
-                acceptedFiles.push(files[i].name);
+<!-- segmentation results -->
+<div id="segmentation-result-section" style="display:none; margin-top: 30px;">
+    <div class="container-wide">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <h5 class="mb-0 fw-semibold">Results</h5>
+            <hr class="flex-grow-1 my-0" style="border-top: 1px solid var(--link-color);">
+        </div>
+
+        <div class="accordion dataset-accordion mb-2" id="dataset-comparison-accordion" style="display:none;">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#dataset-comparison-collapse" aria-expanded="true"
+                        aria-controls="dataset-comparison-collapse">
+                        Dataset comparison : cases selected vs reference
+                    </button>
+                </h2>
+                <div id="dataset-comparison-collapse" class="accordion-collapse collapse show">
+                    <div class="accordion-body" id="dataset-comparison-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion dataset-accordion mb-2" id="processed-cases-accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#processed-cases-collapse" aria-expanded="true"
+                        aria-controls="processed-cases-collapse">
+                        Processed cases details
+                    </button>
+                </h2>
+                <div id="processed-cases-collapse" class="accordion-collapse collapse show">
+                    <div class="accordion-body">
+                        <ul id="result-file-list" class="list-group"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- modal -->
+<div id="segmentation-popup-notice" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning-subtle">
+                <h5 class="modal-title fw-semibold">Segmentation in progress</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Please keep the segmentation tool window open until the segmentation completes.<br>
+                Closing it will interrupt the process and results will be lost.</p>
+                <small class="text-muted"><i>This popup can safely be closed</i></small>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://unpkg.com/@panzoom/panzoom@4.6.2/dist/panzoom.min.js"></script>
+<script src="/static/js/archive.js"></script>
+<script src="/static/js/file-list-ui.js"></script>
+<script src="/static/js/segmentation-pipeline.js"></script>
+<script type="module">
+    import { Niivue } from "https://unpkg.com/@niivue/niivue@0.69.0/dist/index.js";
+    // based on the A-eye paper colors of visualisation
+    window.EYE_LABELS = [
+        { name: 'background', color: [0, 0, 0] },
+        { name: 'lens', color: [204, 5, 0] },
+        { name: 'globe', color: [48, 145, 11] },
+        { name: 'optic nerve', color: [23, 0, 197] },
+        { name: 'intraconal fat', color: [225, 227, 97] },
+        { name: 'extraconal fat', color: [81, 212, 240] },
+        { name: 'lateral rectus muscle', color: [202, 55, 220] },
+        { name: 'medial rectus muscle', color: [255, 255, 240] },
+        { name: 'inferior rectus muscle', color: [138, 108, 183]},
+        { name: 'superior rectus muscle', color: [200, 121, 60] },
+    ];
+
+    /**
+    * Build the colormap for the eye segmentation overlay, based on the A-eye paper colors
+    * @returns {Object} - RGBA channels (R, G, B, A arrays of 256 entries each) for Niivue's colormap
+    */
+    function buildEyeSegColormap() {
+        const n = 256;
+        const n_classes = window.EYE_LABELS.length;
+        const R = [];
+        const G = [];
+        const B = [];
+        const A = [];
+
+        for (let i = 0; i < n; i++) {
+            // finding the index of class after normalization
+            const classe = Math.round(i / (n - 1) * (n_classes - 1));
+            const label = window.EYE_LABELS[classe];
+
+            R.push(label.color[0]);
+            G.push(label.color[1]);
+            B.push(label.color[2]);
+
+            // Handling A (transparency)
+            if (classe === 0) {
+                A.push(0);
             } else {
-                listItem.style.color = 'red'; // ❌ Rejected (red)
-                listItem.innerHTML += ' <span class="badge bg-danger">Rejected ❌</span>';
-                rejectedFiles.push(files[i].name);
+                A.push(255);
             }
-
-            fileList.appendChild(listItem);
         }
-
-        // Display summary
-        var summaryMessage = document.createElement('p');
-        summaryMessage.className = 'mt-2 fw-bold';
-        if (acceptedFiles.length > 0 && rejectedFiles.length > 0) {
-            summaryMessage.innerHTML = `✅ <span class="text-success">${acceptedFiles.length} accepted</span> | ❌ <span class="text-danger">${rejectedFiles.length} rejected</span>`;
-        } else if (acceptedFiles.length > 0) {
-            summaryMessage.innerHTML = `✅ <span class="text-success">${acceptedFiles.length} accepted</span>`;
-        } else if (rejectedFiles.length > 0) {
-            summaryMessage.innerHTML = `❌ <span class="text-danger">${rejectedFiles.length} rejected</span>`;
-        }
-
-        fileList.appendChild(summaryMessage);
-
-        // Enable upload button only if there are accepted files
-        var uploadButton = document.getElementById('upload-button');
-        if (acceptedFiles.length > 0) {
-            uploadButton.classList.remove('btn-secondary');
-            uploadButton.classList.add('btn-success');
-            uploadButton.disabled = false;
-        } else {
-            uploadButton.classList.remove('btn-success');
-            uploadButton.classList.add('btn-secondary');
-            uploadButton.disabled = true;
-        }
+        return { R: R, G: G, B: B, A: A };
     }
 
-    function uploadFiles() {
-        var formData = new FormData();
-        var files = document.getElementById('file-input').files;
 
-        for (var i = 0; i < files.length; i++) {
-            formData.append('files[]', files[i]);
-        }
+    /**
+    * Initialize a Niivue canvas and load a single volume into it
+    * @param {string} canvasId - id of the canvas element to attach Niivue to
+    * @param {string} url - URL of the NIfTI volume to load
+    * @param {string} [colorMap='gray'] - colormap name, or 'eye-seg' for the segmentation colormap
+    * @param {number|null} [cal_min=null] - minimum intensity for display calibration
+    * @param {number|null} [cal_max=null] - maximum intensity for display calibration
+    */
+    window.initNiivue = async (canvasId, url, colorMap = 'gray', cal_min = null, cal_max = null) => {
+        const nv = new Niivue({ isResizeCanvas: true });
+        await nv.attachTo(canvasId);
+        if (colorMap === 'eye-seg')
+            nv.addColormap('eye-seg', buildEyeSegColormap());
+        const vol = { url, colormap: colorMap };
+        if (cal_min !== null)
+            vol.cal_min = cal_min;
+        if (cal_max !== null)
+            vol.cal_max = cal_max;
+        await nv.loadVolumes([vol]);
+    };
 
-        fetch('/upload', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            if (data.status === 'success') {
-                var segmentButton = document.getElementById('segment-button');
-                segmentButton.classList.remove('btn-secondary');
-                segmentButton.classList.add('btn-success');
-                segmentButton.disabled = false;
-            }
-        })
-        .catch(error => {
-            alert('An error occurred while uploading files.');
-            console.error('Error:', error);
-        });
-    }
-
-    function segmentFiles() {
-        const spinner = document.getElementById('processing-spinner');
-        const downloadButton = document.getElementById('download-button');
-        const segmentButton = document.getElementById('segment-button');
-        const uploadButton = document.getElementById('upload-button');
-
-        // Disable buttons
-        segmentButton.disabled = true;
-        uploadButton.disabled = true;
-        segmentButton.classList.add('btn-secondary');
-        segmentButton.classList.remove('btn-success');
-        uploadButton.classList.add('btn-secondary');
-        uploadButton.classList.remove('btn-success');
-
-        // Show spinner
-        spinner.style.display = 'block';
-
-        fetch('/segment', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                spinner.style.display = 'none';
-
-                downloadButton.disabled = false;
-                downloadButton.classList.remove('btn-secondary');
-                downloadButton.classList.add('btn-success');
-                downloadButton.setAttribute('data-download-url', data.download_url);
-
-                alert('Segmentation completed successfully.');
-                window.location.href = data.download_url;
-            })
-            .catch(error => {
-                spinner.style.display = 'none';
-                console.error('Segmentation error:', error);
-                alert('Failed to complete segmentation.');
-            });
-    }
-
-    document.getElementById('download-button').addEventListener('click', function () {
-        var downloadUrl = this.getAttribute('data-download-url');
-        if (downloadUrl) {
-            window.location.href = downloadUrl;
-        } else {
-            alert('No file available for download. Please run segmentation first.');
-        }
-    });
+    /**
+    * Initialize a Niivue canvas with a raw background volume and a segmentation overlay
+    * @param {string} canvasId - id of the canvas element to attach Niivue to
+    * @param {string} backgroundUrl - URL of the raw background NIfTI volume
+    * @param {string} overlayUrl - URL of the segmentation NIfTI volume, shown with the eye-seg colormap
+    */
+    window.initNiivueOverlay = async (canvasId, backgroundUrl, overlayUrl) => {
+        const nv = new Niivue({ isResizeCanvas: true });
+        await nv.attachTo(canvasId);
+        nv.addColormap('eye-seg', buildEyeSegColormap());
+        await nv.loadVolumes([
+            { url: backgroundUrl, colormap: 'gray' },
+            { url: overlayUrl, colormap: 'eye-seg', cal_min: 0, cal_max: 9 }
+        ]);
+    };
 </script>
 {% endblock %}
