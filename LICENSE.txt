@@ -1,7 +1,7 @@
 SOFTWARE LICENSE AGREEMENT FOR ACADEMIC NON-COMMERCIAL RESEARCH PURPOSES ONLY
 
-Between HES-SO Valais-Wallis and CHUV (individually described as �LICENSOR� and hereby identified together as �LICENSORS�) and LICENSEE
-Effective at the date the downloading is completed (�EFFECTIVE DATE�).
+Between HES-SO Valais-Wallis and CHUV (individually described as LICENSOR and hereby identified together as LICENSORS) and LICENSEE
+Effective at the date the downloading is completed (EFFECTIVE DATE).
 
 1. LICENSE
 
@@ -23,8 +23,8 @@ LICENSEE further agrees that the PROGRAM shall not be copied or otherwise adapte
 LICENSEE acknowledges that title to the PROGRAM shall remain with LICENSORS. The PROGRAM shall be marked with the notice of attribution to contributors. LICENSEE shall retain such notice on all copies. LICENSEE agrees to include appropriate acknowledgements if any results obtained from use of the PROGRAM are included in any publication, as follows :
 Notice of attribution: 
 
-* Jaime Barranco, Adrian Luyken, Hamza Kebiri, Philipp Stachs, Pedro M. Gordaliza, Oscar Esteban, Yasser Aleman, Raphael Sznitman, Oliver Stachs, S�nke Langner, Benedetta Franceschiello, Meritxell Bach Cuadra, �Eye-Opening Advances: Automated 3D Segmentation, Key Biomarkers Extraction, and the First Large-Scale MRI Eye Atlas�, https://doi.org/10.1101/2024.08.15.608051
-* Barranco Hernandez, J., Luyken, A., Stachs, P., Esteban, O., Aleman-Gomez, Y., Stachs, O., Langner, S., Franceschiello, B., & Bach Cuadra, M. (2024). MR-Eye atlas: a large-scale atlas of the eye based on T1-weighted MR imaging (1.0) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.13325371
+* Jaime Barranco, Adrian Luyken, Hamza Kebiri, Philipp Stachs, Pedro M. Gordaliza, Oscar Esteban, Yasser Aleman, Raphael Sznitman, Oliver Stachs, Sönke Langner, Benedetta Franceschiello, Meritxell Bach Cuadra, A-eye: Automated 3D MRI Segmentation and Morphometric Feature Extraction for Eye and Orbit Atlas Construction, PLOS ONE, https://doi.org/10.1371/journal.pone.0352257
+* Barranco J, Luyken A, Stachs P, Esteban O, Aleman-Gomez Y, Stachs O, et al. MR-Eye atlas: a large-scale atlas of the eye based on T1-weighted MR imaging [dataset]. Zenodo; 2024. https://doi.org/10.5281/zenodo.13325369
 
 LICENSEE shall not use any trademark or trade name of LICENSORS, or any variation, adaptation, or abbreviation, of such marks or trade names, or any names of officers, faculty, students, employees, or agents of LICENSORS except as states above for acknowledgements purposes.
 
@@ -32,7 +32,7 @@ LICENSEE shall not use any trademark or trade name of LICENSORS, or any variatio
 LICENSEE shall indemnify, defend, and hold harmless LICENSORS, and their respective officers, faculty, students, employees, associated investigators and agents, and their respective successors, heirs and assigns, (Indemnitees), against any liability, damage, loss, or expense (including reasonable attorney fees and expenses) incurred by or imposed upon any of the Indemnitees in connection with any claims, suits, actions, demands or judgments arising out of any theory of liability (including, without limitation, actions in the form of tort, warranty, or strict liability and regardless of whether such action has any factual basis) pursuant to any right or license granted under this Agreement.
 
 4. NO REPRESENTATIONS OR WARRANTIES
-The program is delivered �AS IS�. LICENSORS make no representations or warranties of any kind concerning the program, express or implied, including, without limitation, warranties of merchantability, fitness for a particular purpose, non-infringement, or the absence of latent or other defects, whether or not discoverable. LICENSORS extend no warranties of any kind as to program conformity with whatever user manuals or other literature may be issued from time to time.
+The program is delivered AS IS. LICENSORS make no representations or warranties of any kind concerning the program, express or implied, including, without limitation, warranties of merchantability, fitness for a particular purpose, non-infringement, or the absence of latent or other defects, whether or not discoverable. LICENSORS extend no warranties of any kind as to program conformity with whatever user manuals or other literature may be issued from time to time.
 In no event shall LICENSORS or its respective directors, officers, employees, affiliated investigators and affiliates be liable for incidental or consequential damages of any kind, including, without limitation, economic damages or injury to property and lost profits, regardless of whether LICENSORS shall be advised, shall have other reason to know, or in fact shall know of the possibility of the foregoing.
 
 5. ASSIGNMENT
