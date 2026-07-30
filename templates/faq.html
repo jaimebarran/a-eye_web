@@ -25,7 +25,7 @@
     <div class="faq-item">
         <div class="faq-content">
             <p><strong>I can't create an account.</strong></p>
-            <p>We allow our partners, universities, and various institutions to use our web platform. If you are unable to create an account, it is possible that your email address contains a domain name that is unknown to us. If you believe you are eligible and still cannot register, please contact us at <a href="mailto:jaime.barrancohernandez@hevs.ch">jaime.barrancohernandez@hevs.ch</a>.</p>
+            <p>We allow our partners, universities, and various institutions to use our web platform. If you are unable to create an account, it is likely that the domain of your email address has not been approved yet. If you believe you are eligible and still cannot register, please contact us at <a href="mailto:jaime.barrancohernandez@hevs.ch">jaime.barrancohernandez@hevs.ch</a> so we can review it.</p>
         </div>
     </div>
 
@@ -34,19 +34,24 @@
     <div class="faq-item">
         <div class="faq-content">
             <p><strong>Which file formats can I upload?</strong></p>
-            <p>You can select <code>.nii</code>, <code>.nii.gz</code>, <code>.zip</code> and <code>.7z</code> files. Archives may contain NIfTI images or DICOM folders — the content is extracted automatically, and DICOM series are converted to NIfTI before segmentation. Only <strong>human T1-weighted</strong> images are supported.</p>
+            <p>You can select <code>.nii</code>, <code>.nii.gz</code>, <code>.zip</code> and <code>.7z</code> files. Archives may contain NIfTI images or DICOM folders — the content is extracted automatically, and DICOM series are converted to NIfTI before segmentation. Only human T1-weighted images are supported.</p>
         </div>
     </div>
     <div class="faq-item">
         <div class="faq-content">
             <p><strong>Can I submit DICOM images directly?</strong></p>
-            <p>Not as individual files — DICOM has to be inside a <code>.zip</code> or <code>.7z</code> archive, since a DICOM series is a folder of slices rather than a single file. The platform detects the DICOM folder and converts it for you. If you prefer to convert beforehand, this <a href="https://www.youtube.com/watch?v=DMGWdi6Z73s&ab_channel=AndrewJahn" target="_blank" rel="noopener">video</a> and this <a href="https://andysbrainbook.readthedocs.io/en/latest/MRIcroGL/MRIcroGL_2_dcm2nii.html" target="_blank" rel="noopener">book chapter</a> explain how.</p>
+            <p>Not as individual files — DICOM has to be inside a <code>.zip</code> or <code>.7z</code> archive, since a DICOM series is a folder of slices rather than a single file. The platform detects the DICOM folder and converts it for you.</p>
+            <p class="mt-2">If you prefer to convert beforehand, <code>dcm2niix</code> is the standard tool:</p>
+            <pre><code>dcm2niix -z y -o /path/to/output /path/to/dicom_folder</code></pre>
+            <p class="mt-2">The equivalent in Python, using the same library this platform uses:</p>
+            <pre><code>import dicom2nifti
+dicom2nifti.convert_directory("dicom_folder", "output_folder", compression=True)</code></pre>
         </div>
     </div>
     <div class="faq-item">
         <div class="faq-content">
             <p><strong>How many cases can I submit at once?</strong></p>
-            <p>Up to <strong>10 cases</strong> per submission. A single archive may contain several cases, and the counter on the upload list shows how many have been detected. Files that would push you past the limit are rejected with an explanation.</p>
+            <p>Up to 10 cases per submission. A single archive may contain several cases, and the counter on the upload list shows how many have been detected. Files that would push you past the limit are rejected with an explanation.</p>
         </div>
     </div>
 
@@ -55,13 +60,13 @@
     <div class="faq-item">
         <div class="faq-content">
             <p><strong>Can I use the platform in several tabs at the same time?</strong></p>
-            <p><strong>No — please use a single tab.</strong> All of your work is kept in one working folder on the server, tied to your account rather than to a browser tab. Starting a new upload in a second tab clears that folder, so the first tab's results are no longer available: its viewers will fail to open and its download will no longer work. A results viewer that is <em>already</em> open keeps displaying what it has loaded, which can make the first tab look healthy when its data is in fact gone. Finish and download one run before starting the next.</p>
+            <p>No — please use a single tab. All of your work is kept in one working folder on the server, tied to your account rather than to a browser tab. Starting a new upload in a second tab clears that folder, so the first tab's results are no longer available: its viewers will fail to open and its download will no longer work. A results viewer that is already open keeps displaying what it has loaded, which can make the first tab look healthy when its data is in fact gone. Finish and download one run before starting the next.</p>
         </div>
     </div>
     <div class="faq-item">
         <div class="faq-content">
             <p><strong>How long does a segmentation take, and can I close the page?</strong></p>
-            <p>Your job is submitted to our HPC cluster, so the total time depends on how many cases you sent and on how busy the cluster is — typically a few minutes once the job starts running. <strong>Keep the tab open until it finishes.</strong> A run is limited to one hour, after which the request times out.</p>
+            <p>Your job is submitted to our HPC cluster, so the total time depends on how many cases you sent and on how busy the cluster is — typically a few minutes once the job starts running. Keep the tab open until it finishes. A run is limited to one hour, after which the request times out.</p>
         </div>
     </div>
     <div class="faq-item">
@@ -73,7 +78,8 @@
     <div class="faq-item">
         <div class="faq-content">
             <p><strong>The segmentation failed. What should I do?</strong></p>
-            <p>Your working folder is cleared when a run fails, so start again with a fresh upload. Because the whole submission runs as one cluster job, a single problematic image causes the entire batch to fail — if a retry fails too, try submitting the cases one at a time to identify which one is responsible. Check as well that the images really are human T1-weighted scans. If it keeps failing, contact us at <a href="mailto:jaime.barrancohernandez@hevs.ch">jaime.barrancohernandez@hevs.ch</a>.</p>
+            <p>Your working folder is cleared when a run fails, so start again with a fresh upload. Because the whole submission runs as one cluster job, a single problematic image causes the entire batch to fail — if a retry fails too, try submitting the cases one at a time to identify which one is responsible. Check as well that the images really are human T1-weighted scans.</p>
+            <p class="mt-2">Note the error message shown on the page, and if you have an archive from an earlier run, look at its <code>logs/</code> folder — <code>app.log</code> and the <code>.err</code> file from the cluster usually say what went wrong. Please send those logs, together with the approximate time of the failed attempt, to <a href="mailto:jaime.barrancohernandez@hevs.ch">jaime.barrancohernandez@hevs.ch</a>. A failed run produces no archive of its own, but we keep a copy of your run log on the server and can look it up from the time you give us.</p>
         </div>
     </div>
 
@@ -101,6 +107,12 @@
     </div>
     <div class="faq-item">
         <div class="faq-content">
+            <p><strong>Does the results viewer keep my images?</strong></p>
+            <p>No. The viewer only displays your images while the page is open — it stores nothing in your browser, and neither your uploaded scan nor the resulting segmentations are kept once you reset the session, start a new upload, or leave the page. Download the archive before you go: it is the only copy you will have.</p>
+        </div>
+    </div>
+    <div class="faq-item">
+        <div class="faq-content">
             <p><strong>Do the logs in my download contain other users' information?</strong></p>
             <p>No. Each run writes to its own log, and only that log is placed in your archive. The logs describe your own submission — the files processed, the cluster job, and any errors — and never another user's activity.</p>
         </div>
@@ -111,7 +123,7 @@
     <div class="faq-item">
         <div class="faq-content">
             <p><strong>Where is my medical data stored, and is it exposed?</strong></p>
-            <p>Processing takes place on secured infrastructure at the HES-SO in Sion (Valais). Your uploaded images are used only to produce your results and are <strong>not retained</strong> afterwards. The resulting segmentations and biomarkers are archived on our secured server and are used to monitor and improve A-eye's performance. Nothing is shared with third parties, and no data is publicly accessible.</p>
+            <p>Processing takes place on secured infrastructure at the HES-SO in Sion (Valais). Your uploaded images are used only to produce your results and are not retained afterwards. The resulting segmentations and biomarkers are archived on our secured server and are used to monitor and improve A-eye's performance. Nothing is shared with third parties, and no data is publicly accessible.</p>
         </div>
     </div>
     <div class="faq-item">

@@ -701,11 +701,13 @@ a:hover {
     transition: background-color 0.2s ease;
 }
 
-.faq-item:nth-child(odd) {
+/* nth-of-type, not nth-child: the section headings between the rows are
+   siblings too, and counting them would break the alternation. */
+.faq-item:nth-of-type(odd) {
     background-color: var(--faq-odd-bg);
 }
 
-.faq-item:nth-child(even) {
+.faq-item:nth-of-type(even) {
     background-color: var(--faq-even-bg);
 }
 
@@ -718,12 +720,28 @@ a:hover {
     margin: 0;
 }
 
-.faq-item p strong {
+/* Only the question heading is enlarged. Scoped to the first paragraph so that
+   emphasis inside an answer stays at body size. */
+.faq-item p:first-child strong {
     font-size: clamp(1rem, 3vw, 1.5em);
 }
 
 .faq-item p:not(strong) {
     font-size: clamp(0.9rem, 2.5vw, 1em);
+}
+
+.faq-item pre {
+    background-color: var(--faq-code-bg, rgba(127, 127, 127, 0.12));
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin: 10px 0 0;
+    overflow-x: auto;
+    font-size: clamp(0.8rem, 2.2vw, 0.9rem);
+}
+
+.faq-item pre code {
+    background: none;
+    padding: 0;
 }
 
 /* ============================================================

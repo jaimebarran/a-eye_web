@@ -67,14 +67,12 @@ from utils import (
     cancel_slurm_job,
     clean_folder_hpc,
     clean_folders,
-    convert_country_to_iso3,
     copy_folder_to_hpc,
     copy_segmentation_data,
     extract_nifti_metadata,
     get_cases_processed,
-    get_country_from_ip,
-    get_user_data,
     get_user_paths,
+    get_users_statistics,
     increment_cases_processed,
     mail,
     print_and_log,
@@ -272,36 +270,15 @@ def logout():
 
 @bp.route("/users")
 def users():
-    users_data = get_user_data()
-    total_users = len(users_data)
+    stats = get_users_statistics()
+    total_users = stats["total_users"]
+    total_institutions = stats["total_institutions"]
     cases_processed = get_cases_processed()
 
-    # Calculate the number of institutions
-    domains = set()
-    for user in users_data:
-        email = user.get("email")
-        if email:
-            domain = email.split("@")[-1]
-            domains.add(domain)
-    total_institutions = len(domains)
-
-    # Get country data from user IPs
-    country_counts = {}
-    for user in users_data:
-        if isinstance(user, dict):
-            ip = user.get("last_ip")
-            if ip:
-                country = get_country_from_ip(ip)
-                if country:
-                    country_iso3 = convert_country_to_iso3(country)
-                    if country_iso3:
-                        if country_iso3 in country_counts:
-                            country_counts[country_iso3] += 1
-                        else:
-                            country_counts[country_iso3] = 1
-
     # Create a DataFrame for the country data
-    df = pd.DataFrame(list(country_counts.items()), columns=["Country", "Count"])
+    df = pd.DataFrame(
+        list(stats["country_counts"].items()), columns=["Country", "Count"]
+    )
 
     # Generate the choropleth map
     fig = px.choropleth(
@@ -328,7 +305,12 @@ def users():
         coloraxis_showscale=False,
     )
 
-    map_html = fig.to_html(full_html=False, config={"responsive": True})
+    # include_plotlyjs="cdn" instead of the default, which inlines the whole
+    # ~4.7 MB plotly bundle into every single response. Bootstrap and Font
+    # Awesome are already loaded from a CDN in base.html.
+    map_html = fig.to_html(
+        full_html=False, include_plotlyjs="cdn", config={"responsive": True}
+    )
 
     return render_template(
         "users.html",

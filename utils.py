@@ -13,7 +13,9 @@ import shutil
 import stat
 import subprocess
 import tempfile
+import time
 import zipfile
+from concurrent.futures import ThreadPoolExecutor
 from contextvars import ContextVar
 from datetime import datetime
 from functools import wraps
@@ -52,6 +54,15 @@ NOT_TO_OUTPUT = [
 # Run log of the request being served, set by bind_run_logs()/start_run_logs().
 # Each user gets their own directory, so concurrent runs never share a log file.
 _run_logs_dir: ContextVar[str | None] = ContextVar("run_logs_dir", default=None)
+
+# Users page. Building it needs the Auth0 user listing plus one geolocation
+# lookup per IP, which together dominate the page's load time while the numbers
+# themselves barely move. Both are therefore cached, and the lookups reuse one
+# pooled HTTPS connection.
+USERS_STATS_TTL_SECONDS = 600
+_users_stats_cache: dict[str, float | dict | None] = {"at": 0.0, "value": None}
+_ip_country_cache: dict[str, str | None] = {}
+_http = requests.Session()
 
 
 # Adapted from (open-webui-graphiti-memory, Skyzi000, accessed 01.06.2026)
@@ -313,11 +324,85 @@ def requires_auth_api(f):
 
 
 def get_country_from_ip(ip):
-    response = requests.get(f"https://ipinfo.io/{ip}/json")
-    data = response.json()
-    country = data.get("country")
-    print_and_log(f"[A-eye] IP: {ip}, Country: {country}", "info", LOGS_FOLDER)
+    """Resolve an IP to a 2-letter country code, memoised for the process life.
+
+    Args:
+        ip (str): the IP address to locate
+
+    Returns:
+        str | None: the alpha-2 country code, or None if it could not be resolved
+    """
+    if ip in _ip_country_cache:
+        return _ip_country_cache[ip]
+
+    try:
+        response = _http.get(f"https://ipinfo.io/{ip}/json", timeout=3)
+        response.raise_for_status()
+        country = response.json().get("country")
+    except (requests.RequestException, ValueError):
+        # A geolocation failure must not take the whole page down with it.
+        country = None
+
+    _ip_country_cache[ip] = country
     return country
+
+
+def get_users_statistics(force_refresh: bool = False) -> dict:
+    """Totals and per-country counts for the users page.
+
+    The result is cached for USERS_STATS_TTL_SECONDS, and the geolocation
+    lookups are done once per unique IP and run concurrently.
+
+    Args:
+        force_refresh (bool): recompute even if a fresh cached value exists
+
+    Returns:
+        dict: total_users, total_institutions and country_counts (ISO-3 -> count)
+    """
+    cached = _users_stats_cache["value"]
+    if (
+        not force_refresh
+        and cached is not None
+        and time.monotonic() - _users_stats_cache["at"] < USERS_STATS_TTL_SECONDS
+    ):
+        return cached
+
+    users_data = get_user_data()
+
+    institutions = {
+        user["email"].split("@")[-1]
+        for user in users_data
+        if isinstance(user, dict) and user.get("email")
+    }
+
+    ips = [
+        user["last_ip"]
+        for user in users_data
+        if isinstance(user, dict) and user.get("last_ip")
+    ]
+
+    # One lookup per distinct IP rather than one per user, in parallel: the
+    # calls are entirely network-bound.
+    unique_ips = set(ips)
+    pending = [ip for ip in unique_ips if ip not in _ip_country_cache]
+    if pending:
+        with ThreadPoolExecutor(max_workers=min(8, len(pending))) as pool:
+            pool.map(get_country_from_ip, pending)
+
+    country_counts: dict[str, int] = {}
+    for ip in ips:
+        country_iso3 = convert_country_to_iso3(get_country_from_ip(ip))
+        if country_iso3:
+            country_counts[country_iso3] = country_counts.get(country_iso3, 0) + 1
+
+    stats = {
+        "total_users": len(users_data),
+        "total_institutions": len(institutions),
+        "country_counts": country_counts,
+    }
+    _users_stats_cache["value"] = stats
+    _users_stats_cache["at"] = time.monotonic()
+    return stats
 
 
 def convert_country_to_iso3(country_code):
