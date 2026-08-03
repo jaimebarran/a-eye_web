@@ -58,8 +58,11 @@ class Config:
     AUTH0_LOGOUT_URL = os.getenv("AUTH0_LOGOUT_URL")
 
     # Mail config
+    # The TLS/SSL flags must be parsed, not passed through: os.getenv returns
+    # "False" as a non-empty string, which is truthy, so Flask-Mail would open
+    # an SSL socket on the plaintext port 25 and fail with WRONG_VERSION_NUMBER.
     MAIL_SERVER = os.getenv("MAIL_SERVER")
     MAIL_PORT = int(os.getenv("MAIL_PORT"))
-    MAIL_USE_TLS = os.getenv("MAIL_USE_TLS")
-    MAIL_USE_SSL = os.getenv("MAIL_USE_SSL")
+    MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "False").lower() in ("true", "1", "yes")
+    MAIL_USE_SSL = os.getenv("MAIL_USE_SSL", "False").lower() in ("true", "1", "yes")
     MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER")

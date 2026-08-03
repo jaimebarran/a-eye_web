@@ -78,6 +78,7 @@ from utils import (
     print_and_log,
     requires_auth,
     requires_auth_api,
+    send_email,
     start_run_logs,
     sync_logs_to_output,
     upload_files,
@@ -506,7 +507,15 @@ def segment() -> tuple[Response, int]:
 
     # 3. Start background thread to copy files
     increment_cases_processed()
-    # send_email(user_email, "A-eye segmentation task completed successfully. You can download the results.")
+    # The results are already prepared at this point, so a mail failure must
+    # never cost the user their download.
+    try:
+        send_email(
+            user_email,
+            "A-eye segmentation task completed successfully. You can download the results.",
+        )
+    except Exception:
+        current_app.logger.exception("Could not send completion email to %s", user_email)
     # Threads do not inherit context, so carry the run log binding across
     # explicitly or the archiving thread would log to the shared file only.
     threading.Thread(

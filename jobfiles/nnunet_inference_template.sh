@@ -12,7 +12,7 @@
 #SBATCH --output=/home/jaime.barrancohernandez/results/nnunet/nnUNet_predict.%N.%j.%a.out  # output log
 #SBATCH --error=/home/jaime.barrancohernandez/results/nnunet/nnUNet_predict.%N.%j.%a.err   # error log
 #SBATCH --mail-type=BEGIN,END  # send email when job begins and ends
-#SBATCH --mail-user=jaime.barrancohernandez@hevs.ch # email address to send notifications
+#SBATCH --mail-user=jaime.barrancohernandez@hevs.ch # email address to send notifications. Replace with $MAIL_USER
 
 apptainer exec \
     --nv \
