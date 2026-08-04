@@ -3,6 +3,14 @@
 This module contains functions to perform the quadrant-based segmentation:
 cropping each eye's quadrant before segmentation, then uncropping and merging
 the two segmented quadrants back into a single image.
+
+The cropping slices the data array directly, so it only finds an eye when array
+axis 0 runs left-right and axis 1 runs posterior-anterior. That is true of a
+NIfTI stored in RAS order but not of one stored any other way -- a PIL-ordered
+image (as produced by some MPRAGE conversions) would have the same slice take an
+inferior/posterior quadrant containing no eye at all, and the segmentation would
+silently come back empty. Every image is therefore reoriented to canonical RAS
+with `to_canonical` before it is cropped.
 """
 
 # Adapted from (quadrant_segmentation.ipynb, jaimebarran, accessed 26.05.2026)
@@ -13,17 +21,37 @@ import nibabel as nib
 import numpy as np
 
 
+def to_canonical(img: nib.Nifti1Image) -> nib.Nifti1Image:
+    """To reorient a NIfTI to canonical RAS (axis 0 = R, 1 = A, 2 = S).
+
+    This is a lossless permutation and flip of the data array with a matching
+    change to the affine, so the image occupies exactly the same world space
+    afterwards. Applying it to an already-canonical image is a no-op, which
+    makes it safe to call more than once.
+
+    Args:
+        img (nib.Nifti1Image): the image to reorient
+
+    Returns:
+        nib.Nifti1Image: the same image in canonical RAS orientation
+    """
+    return nib.as_closest_canonical(img)
+
+
 def crop_quadrant(img_path: Path, left_side: bool) -> nib.Nifti1Image:
     """To crop the NIfTI to the left/right upper quadrant, where the eye lies.
+
+    The image is reoriented to canonical RAS first, so the crop finds the eye
+    whatever orientation the uploaded file was stored in.
 
     Args:
         img_path (Path): path to the NIfTI file
         left_side (bool): True for the left eye quadrant, False for the right
 
     Returns:
-        nib.Nifti1Image: the cropped NIfTI
+        nib.Nifti1Image: the cropped NIfTI, in canonical RAS orientation
     """
-    img = nib.load(img_path)
+    img = to_canonical(nib.load(img_path))
     data = img.get_fdata()
     # Crop to upper quadrant cube (RAS orientation)
     # Right: reduce left dimension (axis 0)
@@ -34,10 +62,19 @@ def crop_quadrant(img_path: Path, left_side: bool) -> nib.Nifti1Image:
 
     if left_side:
         cropped = data[:mid_x, mid_y:, :]
+        offset = (0, mid_y, 0)
     else:
         cropped = data[mid_x:, mid_y:, :]
+        offset = (mid_x, mid_y, 0)
 
-    return nib.Nifti1Image(cropped, img.affine, img.header)
+    # Shift the origin to the corner the crop actually starts at, so the cropped
+    # image still reports the correct world position. uncrop_quadrant reassembles
+    # by index and does not depend on this, but a crop carrying the uncropped
+    # origin misplaces the eye for anything that reads its affine.
+    affine = img.affine.copy()
+    affine[:3, 3] = img.affine[:3, :3] @ np.array(offset, dtype=float) + img.affine[:3, 3]
+
+    return nib.Nifti1Image(cropped, affine, img.header)
 
 
 def uncrop_quadrant(
