@@ -46,6 +46,7 @@ from package.biomarkers.visualisations import plot_axial_length
 from package.quadrant_segmentation.quadrant import (
     crop_quadrant,
     merge_quadrants,
+    to_canonical,
     uncrop_quadrant,
 )
 from package.statistical_analysis.analysis import (
@@ -460,7 +461,16 @@ def segment() -> tuple[Response, int]:
 
     for original_file in paths.aux_input.glob("*_0000.nii.gz"):
         case_name = original_file.name.replace("_0000.nii.gz", "")
-        original_shapes[case_name] = nib.load(original_file).shape
+        # Normalise the orientation once, up front. The quadrant crop slices the
+        # data array directly and only lands on an eye when the image is stored in
+        # RAS order, and everything downstream has to agree with it: the shape the
+        # segmentation is uncropped back into, the raw volume the results are
+        # overlaid on, and the crops the biomarkers are measured from. Uploads that
+        # arrive in any other order (PIL, LAS, ...) would otherwise be cropped to a
+        # quadrant holding no eye and come back empty.
+        canonical = to_canonical(nib.load(original_file))
+        nib.save(canonical, original_file)
+        original_shapes[case_name] = canonical.shape
         # copy original file for overlay visualization of results
         shutil.copy2(original_file, paths.download / f"{case_name}_raw.nii.gz")
 
