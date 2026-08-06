@@ -106,9 +106,12 @@ def _process_eye(
     Returns:
         tuple[dict, dict | None]: biomarkers values, biomarkers values formatted for csv
     """
-    segmentation_path = paths.download / f"{case_name}_{side}_cropped.nii.gz"
+    # Both crops are taken with the same index arithmetic on volumes of the same
+    # shape, so segmentation and raw stay voxel-aligned. The measurements below
+    # read voxel arrays and header zooms only, never the affine.
+    segmentation_path = paths.download / f"{case_name}_left_right.nii.gz"
 
-    segmentation_image = nib.load(str(segmentation_path))
+    segmentation_image = crop_quadrant(segmentation_path, left_side=left_side)
     raw_image = crop_quadrant(raw_path, left_side=left_side)
 
     volumes = compute_volumetry(segmentation_image)
@@ -439,8 +442,10 @@ def segment() -> tuple[Response, int]:
 
     _cancel_job(paths)
 
-    # keeping the original dimension of the file
+    # keeping the original dimension of the file, and its affine so the
+    # segmentation can be put back in the space of the image it came from
     original_shapes: dict[str, tuple] = {}
+    original_affines: dict = {}
 
     for original_file in paths.aux_input.glob("*_0000.nii.gz"):
         case_name = original_file.name.replace("_0000.nii.gz", "")
@@ -454,6 +459,7 @@ def segment() -> tuple[Response, int]:
         canonical = to_canonical(nib.load(original_file))
         nib.save(canonical, original_file)
         original_shapes[case_name] = canonical.shape
+        original_affines[case_name] = canonical.affine
         # copy original file for overlay visualization of results
         shutil.copy2(original_file, paths.download / f"{case_name}_raw.nii.gz")
 
@@ -481,28 +487,24 @@ def segment() -> tuple[Response, int]:
     paths.active_job_file.unlink(missing_ok=True)
 
     for case_name, original_shape in original_shapes.items():
-        left_segmented = nib.load(paths.download / f"{case_name}_left.nii.gz")
-        right_segmented = nib.load(paths.download / f"{case_name}_right.nii.gz")
+        # The cluster returns one segmentation per cropped quadrant. Only the
+        # merged volume is kept: the two quadrants are exactly the halves it is
+        # built from, so the biomarker step slices them back out of it instead of
+        # four extra files sitting on disk.
+        uncropped: dict[str, nib.Nifti1Image] = {}
+        for side, left_side in (("left", True), ("right", False)):
+            segmented_path = paths.download / f"{case_name}_{side}.nii.gz"
+            uncropped[side] = uncrop_quadrant(
+                nib.load(segmented_path),
+                original_shape,
+                original_affines[case_name],
+                left_side=left_side,
+            )
+            # uncrop_quadrant has read the data by now, so the file can go.
+            segmented_path.unlink()
 
-        shutil.copy2(
-            paths.download / f"{case_name}_left.nii.gz",
-            paths.download / f"{case_name}_left_cropped.nii.gz",
-        )
-        shutil.copy2(
-            paths.download / f"{case_name}_right.nii.gz",
-            paths.download / f"{case_name}_right_cropped.nii.gz",
-        )
-
-        left_uncropped = uncrop_quadrant(left_segmented, original_shape, left_side=True)
-        right_uncropped = uncrop_quadrant(
-            right_segmented, original_shape, left_side=False
-        )
-
-        nib.save(left_uncropped, paths.download / f"{case_name}_left.nii.gz")
-        nib.save(right_uncropped, paths.download / f"{case_name}_right.nii.gz")
-
-        merged = merge_quadrants(left_uncropped, right_uncropped)
-        nib.save(merged, paths.download / f"{case_name}_both.nii.gz")
+        merged = merge_quadrants(uncropped["left"], uncropped["right"])
+        nib.save(merged, paths.download / f"{case_name}_left_right.nii.gz")
 
     print_and_log(
         "[A-eye] Segmentation done - preparing results for download...",
@@ -546,9 +548,7 @@ def segment() -> tuple[Response, int]:
         result.append({
             "name": case_name,
             "input_name": f"{case_name}_raw.nii.gz",
-            "left_name": f"{case_name}_left.nii.gz",
-            "right_name": f"{case_name}_right.nii.gz",
-            "both_name": f"{case_name}_both.nii.gz",
+            "both_name": f"{case_name}_left_right.nii.gz",
             "metadata": input_metadata,
         })
 

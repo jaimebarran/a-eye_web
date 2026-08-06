@@ -46,7 +46,11 @@ from user_paths import UserPaths
 
 # Patterns left out of the user-facing download ZIP. Everything else in the
 # download folder is shipped to the user; filer01 archives it all regardless.
-# The raw upload is excluded because the user already has it locally.
+# The raw upload is excluded because the user already has it locally. It is the
+# only volume in the download folder that is not shipped: the segmentation is
+# written straight to its merged <case>_left_right.nii.gz and nothing else.
+# Beware of widening this list with a "*_right.nii.gz"-style pattern - it would
+# match the merged volume too, and silently ship an archive with no results.
 NOT_TO_OUTPUT = [
     "*_raw.nii.gz",
 ]

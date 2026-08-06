@@ -112,10 +112,8 @@ dicom2nifti.convert_directory("dicom_folder", "output_folder", compression=True)
             <p><strong>What is inside the results archive?</strong></p>
             <p>A single <code>.zip</code> containing, for each case:</p>
             <ul>
-                <li>the per-eye segmentation masks — <code>_left.nii.gz</code>, <code>_right.nii.gz</code> and the merged <code>_both.nii.gz</code>;</li>
-                <li>the cropped per-eye masks used for the biomarkers — <code>_left_cropped.nii.gz</code>, <code>_right_cropped.nii.gz</code>;</li>
-                <li>details of the inference — <code>postprocessing.json</code>, <code>plans.pkl</code> and <code>prediction_time.txt</code>;</li>
-                <li>the logs of your run, under <code>logs/</code>;</li>
+                <li>the segmentation mask of both eyes, in the space of your original image — <code>_left_right.nii.gz</code>;</li>
+                <li>the logs of your run and the details of the inference, under <code>logs/</code>;</li>
                 <li>the <a href="{{ url_for('routes.serve_license') }}" download>license agreement</a>;</li>
                 <li>and, if you extracted biomarkers, the axial length visualisations (<code>.png</code>) plus a summary table (<code>biomarkers.csv</code>).</li>
             </ul>

@@ -78,13 +78,23 @@ def crop_quadrant(img_path: Path, left_side: bool) -> nib.Nifti1Image:
 
 
 def uncrop_quadrant(
-    cropped_img: nib.Nifti1Image, original_shape: tuple[int, int, int], left_side: bool
+    cropped_img: nib.Nifti1Image,
+    original_shape: tuple[int, int, int],
+    original_affine: np.ndarray,
+    left_side: bool,
 ) -> nib.Nifti1Image:
     """To reverse a cropped file back into the original image space
+
+    The original affine has to be given back explicitly: crop_quadrant moved the
+    origin to the corner the crop starts at, so a full-size volume keeping the
+    crop's affine would report itself half an image away from the scan it was
+    segmented from, and any viewer overlaying the two by world position would
+    draw the mask off the eye.
 
     Args:
         cropped_img (nib.Nifti1Image): segmentation output of the cropped quadrant
         original_shape (tuple[int, int, int]): shape of the original full image
+        original_affine (np.ndarray): affine of the original full image
         left_side (bool): True for the left eye quadrant, False for the right
 
     Returns:
@@ -103,7 +113,7 @@ def uncrop_quadrant(
 
     new_header = cropped_img.header.copy()
     new_header.set_data_dtype(np.uint8)
-    return nib.Nifti1Image(full_data, cropped_img.affine, new_header)
+    return nib.Nifti1Image(full_data, original_affine, new_header)
 
 
 def merge_quadrants(

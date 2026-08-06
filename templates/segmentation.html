@@ -29,10 +29,8 @@
                     <strong>axial length</strong> (mm) and <strong>volumetry</strong> (mm³) per structure.
                     <br><br>Results are provided in a <code>.zip</code> archive containing:
                     <ul class="mt-1 mb-0">
-                        <li>per-eye segmentation masks — left, right, and merged (<code>_left.nii.gz</code>, <code>_right.nii.gz</code>, <code>_both.nii.gz</code>)</li>
-                        <li>the cropped per-eye masks used for the biomarkers (<code>_left_cropped.nii.gz</code>, <code>_right_cropped.nii.gz</code>)</li>
-                        <li>inference details — <code>postprocessing.json</code>, <code>plans.pkl</code>, <code>prediction_time.txt</code></li>
-                        <li>the logs of your own run (<code>logs/</code>)</li>
+                        <li>the segmentation mask of both eyes, in the space of your original image (<code>_left_right.nii.gz</code>)</li>
+                        <li>the logs of your own run and the inference details (<code>logs/</code>)</li>
                         <li><em>if biomarkers are extracted:</em> axial length visualisations (<code>.png</code>) and a summary table (<code>biomarkers.csv</code>)</li>
                     </ul>
                     <p class="mt-2 mb-0"><em>Your uploaded image is not included — it is never kept on our servers, so keep your own copy.</em></p>

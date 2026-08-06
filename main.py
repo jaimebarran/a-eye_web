@@ -88,9 +88,14 @@ def getSegmentation(
     # Logs handling: keep only this job's Slurm output. The run's own
     # app.log/console.log are added later by sync_logs_to_output(); the shared
     # server log is never copied here as it holds every user's activity.
+    # nnU-Net's own run details go in there too, so the top of the archive holds
+    # nothing but the results.
     output_logs = paths.download / "logs"
     output_logs.mkdir(parents=True, exist_ok=True)
     move_file(str(paths.download / "*.err"), output_logs)
     move_file(str(paths.download / "*.out"), output_logs)
+    move_file(str(paths.download / "plans.pkl"), output_logs)
+    move_file(str(paths.download / "postprocessing.json"), output_logs)
+    move_file(str(paths.download / "prediction_time.txt"), output_logs)
 
     return "\nInference finished!!"
