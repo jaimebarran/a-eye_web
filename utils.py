@@ -9,6 +9,7 @@ import gzip
 import json
 import os
 import re
+import shlex
 import shutil
 import stat
 import subprocess
@@ -39,6 +40,7 @@ from config import (
     BASE_INPUT_HPC,
     DATA_FOLDER,
     LOGS_FOLDER,
+    OUTPUT_HPC,
     SSH_USER,
     STATS_FILE,
 )
@@ -417,7 +419,40 @@ def convert_country_to_iso3(country_code):
         return None
 
 
-def copy_segmentation_data(user_email, output):
+def filer_is_mounted() -> bool:
+    """Whether DATA_FOLDER is really the filer01 share
+
+    DATA_FOLDER is a bind of the host's CIFS mount, so it appears in the
+    container's own /proc/mounts with fstype cifs. When the host mount is down,
+    docker binds an ordinary empty directory in its place and archiving quietly
+    writes to the container's disk instead - which must never be mistaken for
+    results being safely stored.
+
+    Returns:
+        bool: True if DATA_FOLDER is a mounted CIFS share
+    """
+    try:
+        with open("/proc/mounts") as mounts:
+            for line in mounts:
+                fields = line.split()
+                if len(fields) > 2 and fields[1] == DATA_FOLDER and fields[2] == "cifs":
+                    return True
+    except OSError:
+        pass
+    return False
+
+
+def copy_segmentation_data(user_email, output, hpc_output=None):
+    """Archive a run's results on filer01, then drop the HPC's copy of them
+
+    Args:
+        user_email (str): email of the user the results belong to
+        output (str | Path): local download folder holding the results
+        hpc_output (str | None): the run's output folder on the HPC. It is
+            deleted once the results are known to be on the filer, and kept
+            otherwise - the cluster is the only remaining copy if archiving
+            did not land.
+    """
     zurich_time = datetime.now(ZoneInfo("Europe/Zurich"))
     timestamp = zurich_time.strftime("%Y%m%d_%H%M")
     user_reference_email = clean_email(user_email)
@@ -432,6 +467,28 @@ def copy_segmentation_data(user_email, output):
     print_and_log(
         f"[A-eye] Copied segmentation data to {dest_dir}", "info", LOGS_FOLDER
     )
+
+    if hpc_output:
+        archived = sum(len(files) for _, _, files in os.walk(output_dest))
+        if filer_is_mounted() and archived:
+            try:
+                delete_folder_hpc(hpc_output)
+            except Exception as error:
+                # The results are archived, so this only leaves a folder behind.
+                print_and_log(
+                    f"[A-eye] Could not delete {hpc_output} on HPC: {error}",
+                    "warning",
+                    LOGS_FOLDER,
+                )
+        else:
+            print_and_log(
+                f"[A-eye] Results not confirmed on filer01 "
+                f"(mounted={filer_is_mounted()}, files archived={archived}) - "
+                f"keeping {hpc_output} on HPC",
+                "warning",
+                LOGS_FOLDER,
+            )
+
     sync_logs_to_output(output)
 
 
@@ -607,6 +664,65 @@ def clean_folder_hpc(folder: str) -> None:
         timeout=20,  # Raise a TimeOutException if execution time is more than the set value (in seconds)
     )
     print_and_log(f"[A-eye] Folder {folder} cleaned successfully.", "info", LOGS_FOLDER)
+
+
+def make_folder_hpc(folder: str) -> None:
+    """Create a folder on the HPC, parents included, if it is not there yet
+
+    Args:
+        folder (str): path of the folder to create
+    """
+    subprocess.run(
+        [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=8",
+            SSH_USER,
+            f"mkdir -p {shlex.quote(folder)}",
+        ],
+        check=True,
+        timeout=20,
+    )
+
+
+def delete_folder_hpc(folder: str) -> None:
+    """Delete a folder and everything under it on the HPC
+
+    This runs `rm -rf` over SSH, so it refuses anything that is not strictly a
+    subfolder of OUTPUT_HPC: an empty string, the results root itself or a path
+    walking out of it with `..` would otherwise take every run ever produced
+    with it.
+
+    Args:
+        folder (str): path of the folder to delete, below OUTPUT_HPC
+
+    Raises:
+        ValueError: if folder is not strictly inside OUTPUT_HPC
+    """
+    results_root = OUTPUT_HPC.rstrip("/")
+    target = folder.rstrip("/")
+    if ".." in target.split("/") or not target.startswith(f"{results_root}/"):
+        raise ValueError(
+            f"Refusing to delete {folder!r} on the HPC: not inside {results_root}"
+        )
+
+    print_and_log(f"[A-eye] Deleting {folder} on HPC...", "info", LOGS_FOLDER)
+    subprocess.run(
+        [
+            "ssh",
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=8",
+            SSH_USER,
+            f"rm -rf {shlex.quote(target)}",
+        ],
+        check=True,
+        timeout=20,
+    )
+    print_and_log(f"[A-eye] {folder} deleted from HPC.", "info", LOGS_FOLDER)
 
 
 def delete_folder(folder):

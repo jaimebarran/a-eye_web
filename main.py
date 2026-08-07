@@ -5,18 +5,18 @@ completion, and copies the resulting segmentation files back to the user's
 local download folder.
 """
 
-import os
 import re
 import subprocess
 from datetime import datetime
 
-from config import JOBFILE_HPC, JOBFILE_TEMPLATE, LOGS_FOLDER, OUTPUT_HPC, SSH_USER
+from config import JOBFILE_DIR_HPC, JOBFILE_TEMPLATE, LOGS_FOLDER, OUTPUT_HPC, SSH_USER
 from user_paths import UserPaths
 from utils import (
     cancel_slurm_job,
     clean_email,
     copy_file_to_hpc,
     copy_files_from_hpc,
+    make_folder_hpc,
     modify_jobfile,
     move_file,
     print_and_log,
@@ -37,7 +37,8 @@ def getSegmentation(
         paths (UserPaths): the generated paths based on the user's address
 
     Returns:
-        str: a message to announce segmentation done
+        str: the run's output directory on the HPC, whose content has just been
+            copied back. The caller deletes it once the results are archived.
     """
     # safe_email and timestamp are needed to find the HPC output folder
     # when copying the resulting files back to the local machine
@@ -45,10 +46,11 @@ def getSegmentation(
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     jobfile = paths.jobfile
-    jobfile_hpc = f"{os.path.dirname(JOBFILE_HPC)}/nnunet_inference_{safe_email}.sh"
+    jobfile_hpc = f"{JOBFILE_DIR_HPC}/nnunet_inference_{safe_email}.sh"
 
     modify_jobfile(JOBFILE_TEMPLATE, user_email, timestamp, jobfile, paths.hpc_input)
-    copy_file_to_hpc(jobfile, os.path.dirname(jobfile_hpc))
+    make_folder_hpc(JOBFILE_DIR_HPC)
+    copy_file_to_hpc(jobfile, JOBFILE_DIR_HPC)
 
     # Inference phase
     inference_command = f'ssh {SSH_USER} "sbatch --wait --partition=Dance --account=mattech --qos=normal {jobfile_hpc}"'
@@ -84,7 +86,8 @@ def getSegmentation(
             cancel_slurm_job(job_id)
         raise
 
-    copy_files_from_hpc(f"{OUTPUT_HPC}/{safe_email}_{timestamp}", paths.download)
+    hpc_output = f"{OUTPUT_HPC}/{safe_email}_{timestamp}"
+    copy_files_from_hpc(hpc_output, paths.download)
     # Logs handling: keep only this job's Slurm output. The run's own
     # app.log/console.log are added later by sync_logs_to_output(); the shared
     # server log is never copied here as it holds every user's activity.
@@ -98,4 +101,4 @@ def getSegmentation(
     move_file(str(paths.download / "postprocessing.json"), output_logs)
     move_file(str(paths.download / "prediction_time.txt"), output_logs)
 
-    return "\nInference finished!!"
+    return hpc_output

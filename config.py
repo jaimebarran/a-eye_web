@@ -31,7 +31,11 @@ INPUT_HPC = (
     "/home/jaime.barrancohernandez/shared_datasets/nnunet/nnUNet/nnUNet_inference/input"
 )
 OUTPUT_HPC = "/home/jaime.barrancohernandez/results/nnunet"
-JOBFILE_HPC = "/home/jaime.barrancohernandez/shared_datasets/nnunet/nnunet_inference.sh"
+# Jobfiles live in their own directory: one per user is generated on every run,
+# and next to the dataset they were drowning the folder they shared with the
+# nnUNet resources and the .sif image.
+JOBFILE_DIR_HPC = "/home/jaime.barrancohernandez/shared_datasets/nnunet/jobfiles"
+JOBFILE_HPC = f"{JOBFILE_DIR_HPC}/nnunet_inference.sh"
 
 # mount
 DATA_FOLDER = "/app/filer01"

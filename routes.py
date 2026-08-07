@@ -476,7 +476,7 @@ def segment() -> tuple[Response, int]:
     copy_folder_to_hpc(str(paths.aux_input), paths.hpc_base_input)
 
     try:
-        getSegmentation(user_email, paths)
+        hpc_output: str = getSegmentation(user_email, paths)
     except Exception as error:
         paths.active_job_file.unlink(missing_ok=True)
         print_and_log(f"[A-eye] Segmentation failed: {error}", "error", LOGS_FOLDER)
@@ -532,7 +532,7 @@ def segment() -> tuple[Response, int]:
     # explicitly or the archiving thread would log to the shared file only.
     threading.Thread(
         target=contextvars.copy_context().run,
-        args=(copy_segmentation_data, user_email, paths.download),
+        args=(copy_segmentation_data, user_email, paths.download, hpc_output),
     ).start()
 
     # 4. add result file and metadata
